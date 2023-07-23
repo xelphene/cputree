@@ -2,7 +2,7 @@
 'use strict';
 
 const {
-    C, N, O, conproxy_ObjNode, conproxy_ComputeNode
+    C, N, O,
 } = require('../consts');
 
 function conProxyUnwrap (o) 
@@ -12,10 +12,6 @@ function conProxyUnwrap (o)
     
     if( o.hasOwnProperty(N) )
         return o[N]
-    else if( o[conproxy_ObjNode] )
-        return o[conproxy_ObjNode];
-    else if( o[conproxy_ComputeNode] )
-        return o[conproxy_ComputeNode];
     else
         return o;
 }

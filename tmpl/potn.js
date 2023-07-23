@@ -2,7 +2,7 @@
 'use strict';
 
 const {
-    C, N, conproxy_ObjNode, potnPathFromRoot, nget, nset,
+    C, N, potnPathFromRoot, nget, nset,
 } = require('../consts');
 const pbExist = Symbol('pbExist');
 const pgsExist = Symbol('pgsExist');
@@ -77,7 +77,7 @@ const PotentialNodeProxyHandler =
 
     get (o,key)
     {
-        if( [conproxy_ObjNode, C, N].includes(key) )
+        if( [C, N].includes(key) )
             throw new Error(`attempt to get special key ${key.toString()} on a PotentialNode ${o[potnPathFromRoot]} via Proxy`);
         
         if( [potnPathFromRoot, 'constructor'].includes(key) )

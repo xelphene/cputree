@@ -2,7 +2,6 @@
 'use strict';
 
 const {
-    conproxy_ObjNode, conproxy_ComputeNode,
     enumerable, bfunc, bexist, parent, root, bexpand,
     nget, nset,
     MAJORS, C, N, O,
@@ -24,23 +23,14 @@ const cpuProxyHandler =
 {
     get: (o,key) => {
         plog(`CPU GET on ${o.fullName} for ${key.toString()}`);
-        if( key===conproxy_ComputeNode ) // deprecated
-            return o;
-        else if( key===N )
+        if( key===N )
             return o;
         else
             return Reflect.get(o,key);
     },
     getOwnPropertyDescriptor: (o, key) => {
         plog(`CPU GETOPD on ${o.fullName} for ${key.toString()}`);
-        if( key===conproxy_ComputeNode ) { // deprecated
-            return {
-                configurable: true,
-                enumerable: false,
-                value: o
-            };
-        }
-        else if( key===N ) {
+        if( key===N ) {
             return {
                 configurable: true,
                 enumerable: false,
@@ -98,16 +88,13 @@ const conProxyHandler =
 {
     has(o, key) {
         plog(`HAS on ${o.fullName} for ${key.toString()}`);
-        if( key===conproxy_ObjNode )
-            return true;
-        else if( key===N )
+        if( key===N )
             return true;
         else
             return o.hasNodeWithKey(key) 
     },
     ownKeys(o)  {
         return o.getAllPropKeys()
-            .concat(conproxy_ObjNode)
             .concat(N);
     },
 
@@ -115,8 +102,6 @@ const conProxyHandler =
         plog(`CON GET on ${o.fullName} for ${key.toString()}`);
         if( key=='hasOwnProperty' )
             return o.hasOwnProperty;
-        else if( key===conproxy_ObjNode ) // deprecated
-            return o;
         else if( key===C )
             // should always be the exact Proxy object we were called through
             return o[C];
@@ -148,14 +133,7 @@ const conProxyHandler =
                 enumerable: false,
                 value: Object.prototype.hasOwnProperty
             }
-        else if( key===conproxy_ObjNode ) {
-            plog(`GET conproxy_ObjNode`);
-            return {
-                configurable: true,
-                enumerable: false,
-                value: o
-            };
-        } else if( key===N ) {
+        else if( key===N ) {
             plog(`GET [N]`);
             return {
                 configurable: true,
@@ -248,11 +226,6 @@ const conProxyHandler =
             return true;
         }
         else if( v instanceof ObjNode ) {
-            //if( v.hasOwnProperty(conproxy_ObjNode) ) {
-            //    plog(`    unwrap conproxy`);
-            //    v = v[conproxy_ObjNode];
-            //}
-            
             // potentially unwrap a conproxy
             v = conProxyUnwrap(v);
             

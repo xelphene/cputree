@@ -43,8 +43,6 @@ exports.potnPathFromRoot = Symbol('potnPathFromRoot');
 exports.portalEndpoints = Symbol('portalEndpoints');
 exports.postVal = Symbol('postVal');
 exports.sub = Symbol('sub');
-exports.conproxy_ObjNode = Symbol('conproxy_ObjNode');
-exports.conproxy_ComputeNode = Symbol('conproxy_ComputeNode');
 
 // mio
 exports.mioSrcBranch = Symbol('mioSrcBranch');
