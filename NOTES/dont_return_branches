@@ -1,0 +1,69 @@
+
+what we have a TREE, not an object graph.  don't try to make it pretent
+otherwise.
+
+general compute nodes and referential compute nodes are two different things.
+
+
+# General Purpose Compute Nodes
+
+can't return a branch because:
+
+* n[CTL].fullName etc don't return intuitive values
+
+* the returned branch can be a a reference to the prent (or something like
+that) which means our tree isn't a tree anymore.  various operations
+expecting a tree will fail/loop
+
+* a compute node's value can change at any time.  it could return a branch
+at one point, a different branch at another point.  this sort of breaks the
+principle of the tree having a static structure.
+
+if a compute node returns a branch, the rawObject of the branch will be the
+value of the compute node.  that's how it already is I think; just need to
+stop special casing stuff where a CN returns a rawObject.  log funcs and
+anything that traverses the tree should not look into children on or descend
+into any compute node's value.
+
+computeFunc only called after the tree is finalized.  initial inputs will be
+set.
+
+
+# Referential Compute Nodes
+
+only used to specify the location of some node using CN semantics (i.e. 
+this==our obj node, 'parent', 'root' symbols exist, etc)
+
+only ever called once (because the tree is supposed to be static)
+
+called once somewhere in the finalize process.
+
+can *only* return a branch, nothing else.
+
+expected in these places:
+
+	subobj*
+
+	mapobj
+
+	InputDef's refCN attribute / PostValidateComputeNode
+
+		actually, this needs the dependancy tracking, no?
+
+
+# TODO
+
+make a simpler Proxy to wrap MapObjs.  It has the magic 'this', 'parent',
+etc.  but does not track dependancies or anything like that.
+
+add to MapObj an invokeRefCN (or something) function.  takes a func, builds
+the simple proxy over itself and then calls the function with it and returns
+the result.
+
+need to come up with a better name for these 'Referential Compute Nodes'. 
+They aren't Nodes at all, just plain funcs invoked with the simpler MapObj
+proxy / magic 'this'.
+
+add an Alias node type.  it has a simple refFunc (above) to say what node it
+refers to.  the '$' nodes, if I ever wanted to do them again, could be done
+this way.

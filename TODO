@@ -1,0 +1,128 @@
+
+SEE devs/notes/gobj4/TODO.txt
+
+alias/symlink node
+
+const value node
+
+ObjNode.addCompute: make it take a function as 2nd arg, optionally
+
+replace refCN with something else that doesn't modify the original template.
+
+a mapobj can be 'dormant'.  all leaf nodes have some given value.  they
+aren't actually evaluated.
+
+can't we get ride of 'name' attribute in all Nodes?  node can ask parent
+what it's name is using a ref to iteself.
+
+reference CNs nodes need to a special kind of thing
+
+	fix refCN in buildutil. something about not making the right deps. see comment.
+
+	see NOTES/dont_return_branches
+
+make the input map to subobj work the same way applyInput does: can have depth.
+
+make the input map to subobj validate the inputmap
+
+need methods to detect if one Node is an ancestor of another.
+
+manually declared anon compute nodes
+
+write unit tests for mapobj
+
+	could use play/map.js as test basis
+	and/or play/map_cpu.js
+
+rename nodeType 'reflector' to 'reflect'
+
+literal value node
+
+---
+
+make input validators work
+
+need a way to make any input node a reflector
+
+write unit tests based on test_deepref_modproxy.js
+
+move sub Proxy create logic.
+
+	instead of this in ext proxy:
+		
+		else {
+	        return Reflect.get(obj, prop);
+		}
+
+	do:
+
+		else {
+	        let rv = Reflect.get(obj, prop);
+			if( typeof(rv)=='object' && CTL in rv ) {
+				return getProxy(rv);
+			} else{
+				return rv;
+			}
+		}
+
+	NO. doesn't work. If getting CTL, the value is a BranchNode, not a proxyable object.	
+	we were already trying this anyway: 
+		var value = obj[prop];
+		...
+		if( typeof(value)=='object' && CTL in value ) {
+                return getA1Proxy(value);
+		...
+
+need a way to map *all* inputs from parent to child with names unchanged
+
+	a new Symbol value passed as 2nd param to subobj() ?
+	done: reflect_all
+
+
+
+done: add a method to compute all compute nodes if they're uncomputed
+
+	root.computeAllIfNeeded();
+
+done: need a way to specify initial inputs atomically, so listeners never hear a 'undefined' from any input
+
+	just made everything lazier
+
+done: make map funcs recompute lazily. mark dirty and then compute when value is examined.
+
+
+---
+
+DONE: need a way to add a special kind of subgroup which just runs all
+inputs through a filter function (like ymirror)
+
+	see: todo_ymirror.js
+
+	special case Reflecting node to take a map function. value = f(reflectingNode)
+	really just a group with all those
+
+
+---
+
+DONE: new ReflectedInputNode
+
+DONE: write automated tests
+
+DONE: find a way to prevent addition of new props to _o from outside
+
+	YEP: I think Object.freeze works
+
+DONE: does Group participate in _changeListeners anymore? if not, delete
+
+
+---
+
+DONE: merge SubNode and Group classes
+
+DONE: add naming system with FQDNs
+
+DONE: make Proxies return property descriptor and setter for InputNodes
+
+DONE: add an inspect method to the outer Proxy
+
+	got rid of outer proxy. custom inspect now on wrapped object.

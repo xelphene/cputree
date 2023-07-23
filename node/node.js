@@ -1,0 +1,254 @@
+
+'use strict';
+
+const {ROOT_STR, NAME_SEP, DEBUG, parent, root} = require('../consts');
+const {toPath,Path} = require('../path');
+const NavError = require('../errors').NavError;
+
+class Node {
+    constructor({parent}) {
+        if( parent!==undefined )
+            throw new Error(`passing parent in constructor arg is deprecated`);
+        this._parent = parent; // can be undefined
+        this._enumerable = undefined;
+    }
+    
+    get isRoot () { return this._parent===undefined }
+    get hasParent () { return this._parent!==undefined }
+    get parent () {
+        if( this.isRoot )
+            throw new Error('Trying to get parent of root node');
+        return this._parent
+    }
+    set parent (n) {
+        if( this.definitionFinalized )
+            throw new Error(`attempt to set parent after definitionFinalized`);
+        this._parent = n; 
+    }
+    
+    
+    // call only from parent ObjNode
+    parentAttaching(p) {
+        if( this.definitionFinalized )
+            throw new Error(`parentAttaching() after definitionFinalized`);
+        this._parent = p;
+    }
+    
+    
+    // call from anywhere
+    detachParent() {
+        if( this.definitionFinalized )
+            throw new Error(`detachParent() after definitionFinalized`);
+        if( this.hasParent )
+            this.parent.childDetaching(this);
+        let p = this._parent;
+        this._parent = undefined;
+        return p;
+    }
+    
+    // call only from parent ObjNode
+    parentDetaching () {
+        if( this.definitionFinalized )
+            throw new Error(`parentDetaching() after definitionFinalized`);
+        this._parent = undefined;
+    }
+    
+    get root () {
+        return this.isRoot ? this : this.parent.root;
+    }
+    
+    get name () {
+        if( this.isRoot )
+            return ROOT_STR
+        else {
+            let k = this.parent.getChildKey(this);
+            if( typeof(k)=='string' )
+                return k
+            else
+                return k.toString().slice(7,-1);
+        }
+    }
+
+    /** key is what this node is known at in the ObjNode which contains it.
+        just like the name of any attribute in an ordinary JS object.
+        can be either a string or Symbol
+    */
+    get key () {
+        if( this.isRoot ) {
+            throw new Error('unable to produce a key for the root node');
+        } else {
+            return this.parent.getChildKey(this);
+        }
+    }
+
+    /*
+    get keyPath () {
+        if( this.isRoot )
+            return [];
+        else
+            return this.parent.keyPath.concat([this.key]);
+    }
+    */
+
+    get pathFromRoot () {
+        if( this.isRoot )
+            return toPath([]);
+        else {
+            return this.parent.pathFromRoot.concat(toPath([this.key]));
+        }
+    }
+
+    get pathToRoot() {
+        return this.pathToNode(this.root);
+    }
+
+    get fullNameParts () {
+        if( this.isRoot ) {
+            return [this.name]
+        } else {
+            return this.parent.fullNameParts.concat([this.name]);
+        }
+    }
+    get fullName () {
+        if( this.isRoot ) {
+            return this.name;
+        } else {
+            return this.fullNameParts.join(NAME_SEP)
+        }
+    }
+    
+    get relName () {
+        if( this.isRoot )
+            return '';
+        else
+            return this.fullNameParts.slice(1).join(NAME_SEP);
+    }
+    
+    get debugName () {
+        return `${this.fullName}(${this.nodeAbbr})`;
+    }
+
+    get debugInfo  () { return '' }
+    get debugValue () { return '' }
+
+    get depth () { return this.isRoot ? 0 : this.parent.depth+1 }
+
+    log (m) {
+        if( DEBUG ) {
+            console.log(`${this.debugName}: ${m}`) 
+        }
+    }
+
+    get enumerable ()  { return this._enumerable === undefined ? true : this._enumerable }
+    set enumerable (v) {
+        this._enumerable = v;
+    }
+
+    finalizeDefinition () {}
+
+    logStruct() {
+        for( let n of this.iterTreeDF() ) {
+            if( n.isRoot )
+                continue;
+            let indent = '  '.repeat(n.depth-1);
+            console.log(`${indent}${n.fullName}(${n.nodeAbbr})  ${n.debugInfo}`);
+        }
+    }
+
+    logFlat(opts) {
+        if( typeof(opts)=='object' ) {
+            var includeNonEnumerable = opts.includeNonEnumerable;
+            var showValues = opts.showValues;
+            var includeBranches = opts.includeBranches;
+        } else {
+            var includeNonEnumerable = false;
+            var showValues = true;
+            var includeBranches = false;
+        }
+        
+        for( let n of this.iterTree({includeNonEnumerable}) ) {
+            if( n.isLeaf || includeBranches )
+                if( showValues )
+                    console.log(`${n.fullName}    ${n.debugValue}`);
+                else
+                    console.log(`${n.fullName}`);
+        }
+    }
+
+
+    * iterAncestors () {
+        yield this;
+        let n = this;
+        while( ! n.isRoot )
+        {
+            yield n.parent;
+            n = n.parent;
+        }
+    }
+
+    nearestCommonAncestor(other) {
+        for( let ta of this.iterAncestors() )
+            for( let oa of other.iterAncestors() ) {
+                //console.log(`? ta=${ta.fullName} oa=${oa.fullName}`);
+                if( ta===oa )
+                    return ta;
+            }
+        throw new Error(`unable to find common ancestor of ${this.fullName} and ${other.fullName}`);
+    }
+
+    // always returns an array of length >= 1
+    // rv[0] == this
+    // rv[-1] == a
+    nodesToAncestor(a) {
+        let path = [];
+        for( let n of this.iterAncestors() ) {
+            path.push(n);
+            if( n===a )
+                return path;
+        }
+        throw new Error(`${a.fullName} is not an ancestor of ${this.fullName}`);
+    }
+    
+    pathToNode(other) {
+        let ca = this.nearestCommonAncestor(other);
+        
+        // nav from me up to ca
+        let path = Array(this.nodesToAncestor(ca).length-1).fill(parent);
+        
+        path = path.concat(
+            other.nodesToAncestor(ca).reverse().slice(1).map(n=>n.key)
+        );
+        
+        return new Path(path);
+    }
+    
+
+    hasp(path) { return this.hasNodeAtPath(path) }
+    hasNodeAtPath(path) {
+        try {
+            this.nav(path);
+            return true;
+        } catch (e) {
+            if( e instanceof NavError ) {
+                //console.log(e);
+                return false;
+            } else
+                throw e;
+        }
+    }
+    
+    delp(path) { return this.delNodeAtPath(path) }
+    delNodeAtPath(path) {
+        path = toPath(path);
+        this.nav(path).parent.detachChild(path.last);
+    }
+
+    getp(path) { return this.nav(path) }
+
+    callIfNode(path, f) {
+        if( this.hasNodeAtPath(path) )
+            return f(this.nav(path));
+    }
+}
+
+exports.Node = Node;

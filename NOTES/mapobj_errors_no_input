@@ -1,0 +1,4 @@
+
+if you make a mapobj whose refCN and it returns a CN, strange errors will
+happen because the target CN is being computed before the tree is even
+finalized.  inputs are not yet set.
