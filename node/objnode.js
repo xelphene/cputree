@@ -548,8 +548,6 @@ class ObjNode extends Node {
     get [O] () { return this.rawObject; }
     get O   () { return this.rawObject; }
     
-    get [N] () { return this }
-
     getDTProxyOverMe({rcvr,purpose}) {
         return new Proxy(this, getDTProxyHandler({
             overNode: this,

@@ -1,7 +1,9 @@
 
 'use strict';
 
-const {ROOT_STR, NAME_SEP, DEBUG, parent, root} = require('../consts');
+const {
+    ROOT_STR, NAME_SEP, DEBUG, parent, root, N
+} = require('../consts');
 const {toPath,Path} = require('../path');
 const NavError = require('../errors').NavError;
 
@@ -68,6 +70,8 @@ class Node {
                 return k.toString().slice(7,-1);
         }
     }
+
+    get [N] () { return this }
 
     /** key is what this node is known at in the ObjNode which contains it.
         just like the name of any attribute in an ordinary JS object.
