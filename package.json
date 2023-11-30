@@ -1,0 +1,11 @@
+{
+  "name": "cputree",
+  "version": "0.5.0",
+  "description": "Functional Compute Trees",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Steve Benson",
+  "license": "GPLv3"
+}
