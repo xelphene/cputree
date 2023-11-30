@@ -52,3 +52,4 @@ exports.toPath = require('./path').toPath;
 exports.Path = require('./path').Path;
 
 exports.inpn = require('./inpn');
+exports.errors = require('./errors');

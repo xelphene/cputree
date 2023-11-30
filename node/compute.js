@@ -110,6 +110,8 @@ class BaseComputeNode extends LeafNode {
                 enumerable: false,
                 value: this
             });
+
+            e.blah = 'blah';
             
             throw e;
         }
