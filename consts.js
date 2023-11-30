@@ -30,6 +30,11 @@ exports.endProxy = Symbol('endProxy');
 exports.isDTProxy = Symbol('isDTProxy');
 exports.dtProxyWrappedObject = Symbol('dtProxyWrappedObject');
 
+// if a ComputeNode's compute func throws an error, the raised Error
+// object will be given an excOriginNode prop whose value is the Node where
+// the exception was raised.
+exports.excOriginNode = Symbol('excOriginNode');
+
 //exports.PRE_FINAL_LEAF_VALUE = undefined;
 exports.PRE_FINAL_LEAF_VALUE = Symbol('PRE_FINAL_LEAF_VALUE');
 exports.bfunc = Symbol('bfunc');   // mark a function as a returning a branch

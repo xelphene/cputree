@@ -4,11 +4,11 @@
 const {
     isComputeProxy,  computeProxyWrappedObject, endProxy,
     CTL, enumerable, PRE_FINAL_LEAF_VALUE,
-    isDTProxy,
+    isDTProxy, excOriginNode
 } = require('../consts');
 
 const LeafNode = require('./leaf').LeafNode;
-const PostValCNValidationError = require('../errors').PostValCNValidationError;
+const errors = require('../errors');
 
 class BaseComputeNode extends LeafNode {
     constructor({parent,computeFunc}) {
@@ -88,6 +88,10 @@ class BaseComputeNode extends LeafNode {
         try {
             var newValue = this._f.apply(proxy, []);
         } catch (e) {
+            if( e instanceof errors.InputValidationError )
+                throw e;
+            if( excOriginNode in e )
+                throw e;
             
             // TODO: this will catch exceptions thrown in the same manner as
             // this throw. need to detect them and just retrow.
@@ -96,9 +100,17 @@ class BaseComputeNode extends LeafNode {
             //console.error(`--- begin tree dump ----`);
             //this.root.logFlat();
             //console.error(`--- end tree dump ---`);
-            console.error('');
-            console.error(`Exception in compute node ${this.fullName}:`);
-            console.error(e);
+            
+            //console.error('');
+            //console.error(`Exception in compute node ${this.fullName}:`);
+            //console.error(e);
+            
+            e.message = `${this.fullName}: ${e.message}`;
+            Object.defineProperty(e, excOriginNode, {
+                enumerable: false,
+                value: this
+            });
+            
             throw e;
         }
         
@@ -231,7 +243,7 @@ class PostValidateComputeNode extends ComputeNode {
         super.recompute();
         var [valid, error] = this._postValidate(this, this._value);
         if( ! valid )
-            throw new PostValCNValidationError({
+            throw new errors.PostValCNValidationError({
                 node: this,
                 value: this._value,
                 error

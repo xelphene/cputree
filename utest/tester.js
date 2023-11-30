@@ -13,7 +13,13 @@ class Tester
         for( let f of this._failures ) {
             failCount++;
             console.error(`FAILURE ${failCount}/${this._failures.length}:`);
-            console.error(`  code: ${f.code}`);
+            //console.error(`  code: ${f.code}`);
+            let code = f.code;
+            if( typeof(code)=='function' )
+                code = ''+code;
+            console.error('  code:');
+            for( let line of code.split('\n') )
+                console.error(`    ${line}`);
             console.error(`  result: ${f.actualResult}`);
             console.error(`  expected: ${f.expectedResult}`);
         }
@@ -66,6 +72,24 @@ class Tester
     callEq(f, expectedResult) {
         var r = f();
         if( r != expectedResult ) {
+            this.fail(f.toString(), r, expectedResult);
+        } else {
+            this.pass(f.toString(), r);
+        }
+    }
+    
+    callIs(f, expectedResult) {
+        var r = f();
+        if( r === expectedResult ) {
+            this.pass(f.toString(), r);
+        } else {
+            this.fail(f.toString(), r, expectedResult);
+        }
+    }
+
+    callIsNot(f, expectedResult) {
+        var r = f();
+        if( r === expectedResult ) {
             this.fail(f.toString(), r, expectedResult);
         } else {
             this.pass(f.toString(), r);

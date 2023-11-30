@@ -13,10 +13,17 @@ class NavError extends Error {
     constructor({nodeAtError, originNode, pathFromOrigin, msg}) {
         var m = `Navigation error from ${originNode.fullName} on path ${pathFromOrigin} at ${nodeAtError.fullName}: ${msg}`;
         super(m);
-        this.nodeAtError = nodeAtError;
-        this.originNode = originNode;
-        this.pathFromOrigin = pathFromOrigin;
-        this.nodeAtErrorMsg = msg;
+
+        // make these non-enumerable, otherwise the error report will be
+        // extremely long trying to prettyprint the entirey of these props
+        //this.nodeAtError = nodeAtError;
+        //this.originNode = originNode;
+        //this.pathFromOrigin = pathFromOrigin;
+        //this.nodeAtErrorMsg = msg;
+        Object.defineProperty(this, 'nodeAtError',    {enumerable:false, value: nodeAtError    });
+        Object.defineProperty(this, 'originNode',     {enumerable:false, value: originNode     });
+        Object.defineProperty(this, 'pathFromOrigin', {enumerable:false, value: pathFromOrigin });
+        Object.defineProperty(this, 'nodeAtErrorMsg', {enumerable:false, value: msg            });
     }
 }
 exports.NavError = NavError;
@@ -33,12 +40,25 @@ class InputValidationError extends Error {
         
         super(msg);
         
-        this.msg = msg
-        this.node = node
-        this.value = value
-        this.error = error
+        // make these non-enumerable, otherwise the error report will be
+        // extremely long trying to prettyprint the entirey of these props
+        //this.node = node
+        //this.value = value
+        //this.error = error
+        Object.defineProperty(this, 'node', {
+            enumerable: false,
+            value: node
+        });
+        Object.defineProperty(this, 'value', {
+            enumerable: false,
+            value: value
+        });
+        Object.defineProperty(this, error, {
+            enumerable: false,
+            value: error
+        });
 
-        this.originInputNode = undefined;
+        //this.originInputNode = undefined;
     }
     
     toString () {

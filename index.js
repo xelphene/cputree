@@ -38,6 +38,8 @@ exports.computeProxyWrappedObject = require('./consts').computeProxyWrappedObjec
 exports.nget = require('./consts').nget;
 exports.nset = require('./consts').nset;
 
+exports.excOriginNode = require('./consts').excOriginNode;
+
 exports.applyInput = require('./applyinput').applyInput;
 
 // mio
