@@ -222,6 +222,7 @@ class BaseComputeNode extends LeafNode {
 }
 exports.BaseComputeNode = BaseComputeNode;
 
+/*
 class ComputeNode extends BaseComputeNode {
     constructor({parent, computeFunc}) {
         super({parent, computeFunc});
@@ -253,3 +254,4 @@ class PostValidateComputeNode extends ComputeNode {
     }
 }
 exports.PostValidateComputeNode = PostValidateComputeNode;
+*/

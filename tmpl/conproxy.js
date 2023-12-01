@@ -8,9 +8,8 @@ const {
     potnPathFromRoot,
 } = require('../consts');
 const {
-    ObjNode, ComputeNode, InputNode, MapNode, GetSetNode,
+    ObjNode, GetSetNode, InputNode, MapNode,
 } = require('../node');
-const { PostValidateComputeNode } = require('../node/compute');
 const { getMapOut, getMapOutBCF } = require('../mio');
 const { getPotentialNodeProxy, PotentialNode } = require('./potn');
 const { conProxyUnwrap } = require('./unwrap');
@@ -71,19 +70,6 @@ const cpuProxyHandler =
 };
 exports.cpuProxyHandler = cpuProxyHandler;
 
-const passThruKeys = [
-    Symbol.for('nodejs.util.inspect.custom'),
-    'constructor',
-    'inspect',
-];
-
-function set_mapInputToNode(o, key, v) {
-    return (
-        o.hasInputWithKey(key) &&
-        (v instanceof InputNode || v instanceof ComputeNode)
-    );
-}
-
 const conProxyHandler = 
 {
     has(o, key) {
@@ -111,7 +97,7 @@ const conProxyHandler =
         else if( key===O )
             // return the rawObject for the ObjNode that this Proxy wraps
             return o[O];
-        else if( o.hasComputeWithKey(key) )
+        else if( o.hasGetSetWithKey(key) )
             return new Proxy(o.getProp(key), cpuProxyHandler);
         else if( o.hasObjWithKey(key) )
             //return new Proxy(o.getProp(key), conProxyHandler);
@@ -148,7 +134,7 @@ const conProxyHandler =
                 // should always be the exact Proxy object we were called through
                 value: o[C]
             };
-        } else if( o.hasComputeWithKey(key) )
+        } else if( o.hasGetSetWithKey(key) )
             return {
                 configurable: true,
                 enumerable: true,
@@ -212,11 +198,10 @@ const conProxyHandler =
                     postValidate: pv
                 }));
             } else {
-                if( o.hasComputeWithKey(key) )
+                if( o.hasGetSetWithKey(key) )
                     o.del(key);
                 plog('  new compute node');
-                //o.add(key, new ComputeNode({computeFunc: v}));
-                o.addCompute(key, v);
+                o.addGetSet(key, v);
             }
             return true;
         } else if( !(v instanceof PotentialNode) && typeof(v)=='object' && Object.keys(v).length==0 ) {
@@ -239,7 +224,7 @@ const conProxyHandler =
             }
             return true;
         }
-        else if( v instanceof InputNode || v instanceof ComputeNode || v instanceof MapNode || v instanceof GetSetNode ) {
+        else if( v instanceof InputNode || v instanceof GetSetNode || v instanceof MapNode || v instanceof GetSetNode ) {
             v = conProxyUnwrap(v);
             if( v.isRoot ) {
                 // adding a newly built InputNode
@@ -261,7 +246,7 @@ const conProxyHandler =
                 }
                 return true;
             } else {
-                throw new Error(`conProxy assignment of an InputNode or ComputeNode which is neither an orphan nor in the conProxy's tree`);
+                throw new Error(`conProxy assignment of an InputNode or GetSetNode which is neither an orphan nor in the conProxy's tree`);
             }
         }
         else if( Array.isArray(v) ) {

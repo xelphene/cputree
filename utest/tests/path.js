@@ -2,7 +2,7 @@
 'use strict';
 
 const {
-    ObjNode, AliasValidateNode, InputNode, ComputeNode,
+    ObjNode, AliasValidateNode, InputNode, GetSetNode,
     parent
 } = require('../../');
 const {NavError} = require('../../errors');
@@ -14,8 +14,8 @@ var root = new ObjNode({});
 
 var a = new ObjNode({});
 root.add('a', a);
-var a_cn =  new ComputeNode({
-    computeFunc: () => 1
+var a_cn =  new GetSetNode({
+    getter: () => 1
 });
 a.add('cn',a_cn);
 
@@ -24,12 +24,12 @@ root.getProp('a').add('b', b);
 
 var c = new ObjNode({});
 root.getProp('a').getProp('b').add('c', c);
-var c_cn = new ComputeNode({
-    computeFunc: () => 2
+var c_cn = new GetSetNode({
+    getter: () => 2
 })
 c.add('cn', c_cn);
-var c_cn3 = new ComputeNode({
-    computeFunc: () => 3
+var c_cn3 = new GetSetNode({
+    getter: () => 3
 })
 c.add('cn3', c_cn3);
 

@@ -2,7 +2,7 @@
 'use strict';
 
 const {
-    ObjNode, AliasValidateNode, InputNode, ComputeNode, errors, parent
+    ObjNode, AliasValidateNode, InputNode, GetSetNode, errors, parent
 } = require('../../');
 
 var root, a, a_cn, b, c, c_cn, c_cn3;
@@ -13,8 +13,8 @@ beforeEach( () =>
 
     a = new ObjNode({});
     root.add('a', a);
-    a_cn =  new ComputeNode({
-        computeFunc: () => 1
+    a_cn =  new GetSetNode({
+        getter: () => 1
     });
     a.add('cn',a_cn);
 
@@ -23,13 +23,13 @@ beforeEach( () =>
 
     c = new ObjNode({});
     root.getProp('a').getProp('b').add('c', c);
-    c_cn = new ComputeNode({
-        computeFunc: () => 2
+    c_cn = new GetSetNode({
+        getter: () => 2
     })
     c.add('cn', c_cn);
     
-    c_cn3 = new ComputeNode({
-        computeFunc: () => 3
+    c_cn3 = new GetSetNode({
+        getter: () => 3
     })
     c.add('cn3', c_cn3);
 

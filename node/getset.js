@@ -11,9 +11,9 @@ const LeafNode = require('./leaf').LeafNode;
 const BaseComputeNode = require('./compute').BaseComputeNode;
 
 class GetSetNode extends BaseComputeNode {
-    constructor({parent}) {
-        super({parent});
-        this._setFunc = undefined;
+    constructor({parent, setter, getter}) {
+        super({parent, computeFunc:getter});
+        this._setFunc = setter;
     }
 
     set getFunc (f) {

@@ -10,9 +10,9 @@ const {
     isDTProxy, dtProxyWrappedObject
 } = require('../consts');
 
-const ComputeNode = require('./compute').ComputeNode;
+//const ComputeNode = require('./compute').ComputeNode;
 const BaseComputeNode = require('./compute').BaseComputeNode;
-const PostValidateComputeNode = require('./compute').PostValidateComputeNode;
+//const PostValidateComputeNode = require('./compute').PostValidateComputeNode;
 const InputNode = require('./input').InputNode;
 const MapNode = require('./map').MapNode;
 const Node = require('./node').Node
@@ -81,10 +81,10 @@ class ObjNode extends Node {
     }
     
     get InputNodeClass   () { return InputNode }
-    get ComputeNodeClass () { return ComputeNode }
+    //get ComputeNodeClass () { return ComputeNode }
     get BranchNodeClass  () { return ObjNode }
     get MapNodeClass     () { return MapNode }
-    get PostValidateComputeClass () { return PostValidateComputeNode }
+    //get PostValidateComputeClass () { return PostValidateComputeNode }
     get GetSetNodeClass  () { return GetSetNode }
 
     get debugValue () {
@@ -114,7 +114,7 @@ class ObjNode extends Node {
             throw new Error('finalizeEntireTree() should only be called from the root node');
         
         // all parent links are set
-        // all ObjNode, InputNode and ComputeNode are added
+        // all ObjNode, InputNode and GetSetNode are added
         // MapNode children can now be set up.
         if( ! this.root.definitionFinalized )
             this.finalizeDefinition();
@@ -269,13 +269,14 @@ class ObjNode extends Node {
         else
             return false;
     }
-    hasComputeWithKey (key) { return this._computes.hasOwnProperty(key) }
+    //hasComputeWithKey (key) { return this._computes.hasOwnProperty(key) }
+    hasGetSetWithKey (key) { return this._computes.hasOwnProperty(key) }
     hasObjWithKey     (key) { return this._subs.hasOwnProperty(key) }
     hasBranchWithKey  (key) { return this.hasObjWithKey(key) }
     hasLeafWithKey    (key) {
         return (
             this.hasInputWithKey(key) || 
-            this.hasComputeWithKey(key)
+            this.hasGetSetWithKey(key)
         )
     }
     
@@ -375,8 +376,14 @@ class ObjNode extends Node {
         return this.add( key, new this.MapNodeClass({}) );
     }
     
-    addCompute(key, computeFunc) {
-        return this.add( key, new this.ComputeNodeClass({computeFunc}) );
+    //addCompute(key, computeFunc) {
+    //    return this.add( key, new this.ComputeNodeClass({computeFunc}) );
+    //}
+    
+    addGetSet(key, getter, setter) {
+        return this.add( key, new this.GetSetNodeClass({
+            getter, setter
+        }));
     }
     
     add(key, node) 

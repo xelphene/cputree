@@ -2,7 +2,7 @@
 'use strict';
 
 const {
-    ObjNode, ComputeNode, InputNode,
+    ObjNode, GetSetNode, InputNode,
     parent, bmap,
 } = require('../../');
 
@@ -16,46 +16,46 @@ function test(t)
     
     var sub = new ObjNode({});
     root.add('sub', sub);
-    sub.add('ix1', new ComputeNode({
-        computeFunc: function () {
+    sub.add('ix1', new GetSetNode({
+        getter: function () {
             return this[parent].ix+1
         }
     }));
     sub.add('i', new InputNode({}));
-    sub.add('si2', new ComputeNode({
-        computeFunc: function () {
+    sub.add('si2', new GetSetNode({
+        getter: function () {
             return this.i*2
         }
     }));
     
     var sub2 = new ObjNode({});
     sub.add('sub2',sub2);
-    sub2.add('sscn', new ComputeNode({
-        computeFunc: function () {
+    sub2.add('sscn', new GetSetNode({
+        getter: function () {
             return this[parent].i + this[parent][parent].dx
         }
     }));
-    sub2.add('addCN', new ComputeNode({
-        computeFunc: function () {
+    sub2.add('addCN', new GetSetNode({
+        getter: function () {
             return 222;
         }
     }));
 
     var sub3 = new ObjNode({});
     sub.add('sub3',sub3);
-    sub3.add('keepMe', new ComputeNode({
-        computeFunc: function () {
+    sub3.add('keepMe', new GetSetNode({
+        getter: function () {
             return 111;
         }
     }));
-    sub3.add('overrideMe', new ComputeNode({
-        computeFunc: function () {
+    sub3.add('overrideMe', new GetSetNode({
+        getter: function () {
             return -900;
         }
     }));
 
-    root.add(['sub4','sub5','c'], new ComputeNode({
-        computeFunc: function () {
+    root.add(['sub4','sub5','c'], new GetSetNode({
+        getter: function () {
             return 1059;
         }
     }));
