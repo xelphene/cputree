@@ -10,7 +10,7 @@ outside of it.  If outside, srcBranch will be added as a [mioSrcBranch] child to
 map root.
 
 mapIn and mapOut are functions.  These functions will be the computeFunc of
-new ComputeNodes at mapBranch.[mapIn] and mapBranch.[mapOut], respectively. 
+new GetSetNodes at mapBranch.[mapIn] and mapBranch.[mapOut], respectively. 
 Each function must return another function, the mapFunc, which maps values
 between srcBranch and mapBranch.  Said functions will be provided with on
 argument: the value to be mapped, and should return the desired value.
@@ -36,7 +36,7 @@ linking above.
 getMapBiReplace({srcBranch, mapIn, mapOut})
 buildMapBiReplace({mapBranch, srcBranch, mapIn, mapOut})
 
-input nodes in orig will be replaced with ComputeNodes that apply mapIn.
+input nodes in orig will be replaced with GetSetNodes that apply mapIn.
 
 
 ///////////////////////////////////
@@ -80,7 +80,7 @@ const {
     mioSrcBranch, mioMapIn, mioMapOut, mioInput,
     parent, bexpand,
 } = require('../consts');
-const {ObjNode, ComputeNode, InputNode, MapNode} = require('../node');
+const {ObjNode, GetSetNode, InputNode, MapNode} = require('../node');
 const {getDTProxyHandler} = require('../node/sproxy');
 const {toPath} = require('../path');
 
@@ -194,13 +194,13 @@ function buildMapBi({mapBranch, srcBranch, mapIn, mapOut, inputMode})
         mapBranch.getProp(mioSrcBranch).enumerable = false;
     }
 
-    mapBranch.add(mioMapIn, new ComputeNode({
-        computeFunc: mapIn
+    mapBranch.add(mioMapIn, new GetSetNode({
+        getter: mapIn
     }));
     mapBranch.getProp(mioMapIn).enumerable = false;
     
-    mapBranch.add(mioMapOut, new ComputeNode({
-        computeFunc: mapOut
+    mapBranch.add(mioMapOut, new GetSetNode({
+        getter: mapOut
     }));
     mapBranch.getProp(mioMapOut).enumerable = false;
 
@@ -244,8 +244,8 @@ function buildMapOut(mapBranch, srcBranch)
         mapBranch.getProp(mioSrcBranch).enumerable = false;
     }
 
-    mapBranch.add(mioMapOut, new ComputeNode({
-        computeFunc: function () { return x => x }
+    mapBranch.add(mioMapOut, new GetSetNode({
+        getter: function () { return x => x }
     }));
     mapBranch.getProp(mioMapOut).enumerable = false;
 
@@ -267,7 +267,7 @@ function buildMapOutBCF(mapBranch, branchComputeFunc)
     const {isDTProxy, dtProxyWrappedObject} = require('../consts');
     const {MapDef} = require('../node/sproxy');
     
-    var mapFuncCN = new ComputeNode({});
+    var mapFuncCN = new GetSetNode({});
     
     let bcfThis = new Proxy(mapBranch.parent, getDTProxyHandler({
         overNode: mapBranch.parent,

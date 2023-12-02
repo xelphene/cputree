@@ -2,7 +2,7 @@
 'use strict';
 
 const {
-    ObjNode, ComputeNode, InputNode,
+    ObjNode, GetSetNode, InputNode,
     parent, bmap, bfunc, mio, mioMapOut, mioMapIn, mioSrcBranch,
 } = require('../../');
 
@@ -12,14 +12,14 @@ function getTestLib () {
     r.add('inp0', new InputNode({}));
     
     r.add('s', new ObjNode({}));
-    r.getProp('s').add('c0', new ComputeNode({
-        computeFunc: function () {
+    r.getProp('s').add('c0', new GetSetNode({
+        getter: function () {
             return this[parent].inp0+1
         }
     }));
     r.getProp('s').add('i', new InputNode({}));
-    r.getProp('s').add('j', new ComputeNode({
-        computeFunc: () => 3
+    r.getProp('s').add('j', new GetSetNode({
+        getter: () => 3
     }));
     r.add('j', new InputNode({}));
         
