@@ -189,6 +189,7 @@ const conProxyHandler =
             o.add(key, v);
             return true;
         } else if( typeof(v)=='function' && ! v.hasOwnProperty(bfunc) && ! v.hasOwnProperty(bexpand) ) {
+            /*
             if( o.hasInputWithKey(key) ) {
                 plog('  convert input to PostValCompute');
                 let pv = o.getProp(key).validate;
@@ -203,6 +204,11 @@ const conProxyHandler =
                 plog('  new compute node');
                 o.addGetSet(key, v);
             }
+            */
+            if( o.hasGetSetWithKey(key) || o.hasInputWithKey(key) )
+                o.del(key);
+            plog('  new compute node');
+            o.addGetSet(key, v);
             return true;
         } else if( !(v instanceof PotentialNode) && typeof(v)=='object' && Object.keys(v).length==0 ) {
             // TODO: delete this mode. its just <ObjNode> = {};. kind of vague and error prone.
