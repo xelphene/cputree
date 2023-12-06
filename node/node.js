@@ -2,7 +2,7 @@
 'use strict';
 
 const {
-    ROOT_STR, NAME_SEP, DEBUG, parent, root, N
+    ROOT_STR, NAME_SEP, DEBUG, parent, root, N, enumerable
 } = require('../consts');
 const {toPath,Path} = require('../path');
 const NavError = require('../errors').NavError;
@@ -147,6 +147,11 @@ class Node {
     set enumerable (v) {
         this._enumerable = v;
     }
+    // when working via conproxy we use the cputree.enumerable symbol
+    // but conproxy get on an ObjNode's input prop returns the actual
+    // InputNode
+    get [enumerable] () { return this.enumerable }
+    set [enumerable] (v) { this.enumerable = v }
 
     finalizeDefinition () {}
 
