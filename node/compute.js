@@ -54,6 +54,12 @@ class BaseComputeNode extends LeafNode {
     // called when:
     //  our compute function depends on an Input node value and that Input changes.
     nodeValueChanged(node) {
+        // ignore this from compute nodes
+        // they send nodeValueSpoiled which for us accomplishes the same
+        if( node instanceof BaseComputeNode ) {
+            this.log(`ignoring nodeValueChanged from ${node.debugName}`);
+            return;
+        }
         this.log(`heard nodeValueChanged from ${node.debugName}`);
         this._needsComputing = true;
         this.fireNodeValueSpoiled();
@@ -131,7 +137,7 @@ class BaseComputeNode extends LeafNode {
         this._value = newValue;
         this._needsComputing = false;
 
-        this.log(`RECOMPUTED as ${this._valueStr}. _currentValueIsABranchNode==${this._currentValueIsABranchNode}`);
+        this.log(`RECOMPUTED as ${this._value}. _currentValueIsABranchNode==${this._currentValueIsABranchNode}`);
 
         //this.log(`computed as ${this._value}. will notify my listeners ${this.listenerNamesStr}.`);
         //for( let l of this._changeListeners ) {
