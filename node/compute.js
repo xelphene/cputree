@@ -111,8 +111,6 @@ class BaseComputeNode extends LeafNode {
                 value: this
             });
 
-            e.blah = 'blah';
-            
             throw e;
         }
         
@@ -142,7 +140,7 @@ class BaseComputeNode extends LeafNode {
         //}
 
         // TODO: why did I comment this out?
-        //this.fireNodeValueChanged();
+        this.fireNodeValueChanged();
     }
     
     // called only from the Proxy when a dependancy is found while executing
@@ -210,7 +208,11 @@ class BaseComputeNode extends LeafNode {
     
     get debugInfo () {
         let f = this._needsComputing ? 'stale' : 'fresh';
-        return `value: ${this.debugValue.toString()} (${f});  computeCount: ${this.computeCount};  listensToMe: ${this.listenerNamesStr};  listeningTo: ${this.listeningToStr}`
+        if( this.debugValue === undefined )
+            var dv = 'undefined';
+        else
+            var dv = this.debugValue.toString()
+        return `value: ${dv} (${f});  computeCount: ${this.computeCount};  listensToMe: ${this.listenerNamesStr};  listeningTo: ${this.listeningToStr}`
     }
     
     get valueStr () {

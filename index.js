@@ -53,3 +53,5 @@ exports.Path = require('./path').Path;
 
 exports.inpn = require('./inpn');
 exports.errors = require('./errors');
+
+exports.listen = require('./nodeop').listen;
