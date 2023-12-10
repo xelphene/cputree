@@ -4,11 +4,12 @@
 const {
     isComputeProxy,  computeProxyWrappedObject, endProxy,
     CTL, enumerable, PRE_FINAL_LEAF_VALUE,
-    isDTProxy,
+    isDTProxy, excOriginNode
 } = require('../consts');
 
 const LeafNode = require('./leaf').LeafNode;
 const BaseComputeNode = require('./compute').BaseComputeNode;
+const errors = require('../errors');
 
 class GetSetNode extends BaseComputeNode {
     constructor({parent}) {
@@ -54,6 +55,11 @@ class GetSetNode extends BaseComputeNode {
         try {
             this.setFunc.apply(proxy, [newValue]);
         } catch(e) {
+            if( e instanceof errors.InputValidationError )
+                throw e;
+            if( excOriginNode in e )
+                throw e;
+
             // TODO: this will catch exceptions thrown in the same manner as
             // this throw. need to detect them and just retrow.
             // maybe at a symbol prop to the Error obj and then watch for it?
@@ -61,9 +67,16 @@ class GetSetNode extends BaseComputeNode {
             //console.error(`--- begin tree dump ----`);
             //this.root.logFlat();
             //console.error(`--- end tree dump ---`);
-            console.error('');
-            console.error(`Exception in GetSet node ${this.fullName}:`);
-            console.error(e);
+            //console.error('');
+            //console.error(`Exception in GetSet node ${this.fullName}:`);
+            //console.error(e);
+
+            e.message = `${this.fullName}: ${e.message}`;
+            Object.defineProperty(e, excOriginNode, {
+                enumerable: false,
+                value: this
+            });
+
             throw e;
         }
         
