@@ -4,7 +4,7 @@
 const {
     isComputeProxy,  computeProxyWrappedObject, endProxy,
     CTL, enumerable, PRE_FINAL_LEAF_VALUE,
-    isDTProxy, excOriginNode
+    isDTProxy, excOriginNode, excTopNode
 } = require('../consts');
 
 const LeafNode = require('./leaf').LeafNode;
@@ -96,6 +96,16 @@ class BaseComputeNode extends LeafNode {
         } catch (e) {
             if( e instanceof errors.InputValidationError )
                 throw e;
+
+            if( ! e.hasOwnProperty(excTopNode) )
+                Object.defineProperty(e, excTopNode, {
+                    value: this,
+                    writable: true,
+                    enumerable: false
+                });
+            else
+                e[excTopNode] = this;
+                
             if( excOriginNode in e )
                 throw e;
             

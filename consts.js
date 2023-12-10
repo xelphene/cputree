@@ -34,6 +34,7 @@ exports.dtProxyWrappedObject = Symbol('dtProxyWrappedObject');
 // object will be given an excOriginNode prop whose value is the Node where
 // the exception was raised.
 exports.excOriginNode = Symbol('excOriginNode');
+exports.excTopNode = Symbol('excTopNode');
 
 //exports.PRE_FINAL_LEAF_VALUE = undefined;
 exports.PRE_FINAL_LEAF_VALUE = Symbol('PRE_FINAL_LEAF_VALUE');

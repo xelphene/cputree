@@ -39,6 +39,7 @@ exports.nget = require('./consts').nget;
 exports.nset = require('./consts').nset;
 
 exports.excOriginNode = require('./consts').excOriginNode;
+exports.excTopNode = require('./consts').excTopNode;
 
 exports.applyInput = require('./applyinput').applyInput;
 
