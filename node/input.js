@@ -93,7 +93,7 @@ class InputNode extends LeafNode {
     }
 
     setValue(v) {
-        this.value = v;
+        this._setValue(v);
     }
 
     get defaultValue () { return this._defaultValue }
