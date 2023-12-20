@@ -50,6 +50,12 @@ class BaseComputeNode extends LeafNode {
 
     get hearingFrom    () { return [...this._listeningTo]; }
     get hearingFromStr () { return this.hearingFrom.map( n => n.debugName ).join(', ') }
+    isListeningTo (n) {
+        for( let n2 of this._listeningTo )
+            if( n===n2 )
+                return true;
+        return false;
+    }
 
     // called when:
     //  our compute function depends on an Input node value and that Input changes.

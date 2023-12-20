@@ -219,14 +219,21 @@ class ObjNode extends Node {
         
         for( let c of this.iterComputeChildren() )
         {
-            if( c instanceof GetSetNode )
-                Object.defineProperty(this._o, c.key, {
-                    get: () => c.value,
-                    set: v  => { c.setValue(v) },
-                    enumerable: c.enumerable,
-                    configurable: false,
-                });
-            else
+            if( c instanceof GetSetNode ) {
+                if( c.hasSetter )
+                    Object.defineProperty(this._o, c.key, {
+                        get: () => c.value,
+                        set: v  => { c.setValue(v) },
+                        enumerable: c.enumerable,
+                        configurable: false,
+                    });
+                else
+                    Object.defineProperty(this._o, c.key, {
+                        get: () => c.value,
+                        enumerable: c.enumerable,
+                        configurable: false,
+                    });
+            } else
                 Object.defineProperty(this._o, c.key, {
                     get: () => c.value,
                     enumerable: c.enumerable,

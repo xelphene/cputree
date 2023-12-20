@@ -82,3 +82,11 @@ class InputLinkValidationError extends Error {
     }
 };
 exports.InputLinkValidationError = InputLinkValidationError;
+
+class NoSetterError extends Error {
+    constructor({node}) {
+        super(`cannot set value on AccNode ${node.fullName} because it has no setter`)
+    }
+};
+exports.NoSetterError = NoSetterError;
+

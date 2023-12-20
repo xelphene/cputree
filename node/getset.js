@@ -46,9 +46,14 @@ class GetSetNode extends BaseComputeNode {
     get nodeType () { return 'getset' }
     get nodeAbbr () { return 'gst' }
     
+    get hasSetter () { return this._setFunc !== undefined }
+    
     setValue(newValue) {
         if( ! this.isFinalized )
             throw new Error(`cannot set value before finalization`);
+        
+        if( ! this.hasSetter )
+            throw new errors.NoSetterError({node:this});
         
         var proxy = this.parent.getDTProxyOverMe({purpose:'setter'});
         
