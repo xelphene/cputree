@@ -92,6 +92,10 @@ class InputNode extends LeafNode {
         return v;
     }
 
+    setValue(v) {
+        this.value = v;
+    }
+
     get defaultValue () { return this._defaultValue }
 
     get validate() { return this._validate }

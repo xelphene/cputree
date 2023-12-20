@@ -186,7 +186,11 @@ exports.getDTProxyHandler = function({overNode, rcvr, purpose})
             throw new Error(`Node ${overNode.fullName} has no child named ${key}`);
         if( ! overNode.hasInputWithKey(key) )
             throw new Error(`Node ${overNode.getc(key).fullName} is not an InputNode`);
-        return overNode.getc(key).value = value;
+        
+        overNode.getc(key).value = value;
+        return true; // need to return trueish for Proxy set or exception
+        
+        //return overNode.getc(key).value = value;
         //throw new Error('invalid proxy operation'); 
     },
     deleteProperty(_, key) { throw new Error('invalid proxy operation'); },

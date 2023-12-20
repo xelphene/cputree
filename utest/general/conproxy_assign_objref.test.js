@@ -102,7 +102,6 @@ test('update', () =>
 {
     root.rawObject.dx = 20;
     root.computeIfNeeded();
-    //root.logStruct();
     
     expect( root.getProp('sPlusDx').getProp('i').value ).toBe( 22  );
     expect( root.getProp('sPlusDx').getProp('c').value ).toBe( 242 );

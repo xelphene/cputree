@@ -39,6 +39,7 @@ exports.nget = require('./consts').nget;
 exports.nset = require('./consts').nset;
 
 exports.excOriginNode = require('./consts').excOriginNode;
+exports.excTopNode = require('./consts').excTopNode;
 
 exports.applyInput = require('./applyinput').applyInput;
 
@@ -53,3 +54,5 @@ exports.Path = require('./path').Path;
 
 exports.inpn = require('./inpn');
 exports.errors = require('./errors');
+
+exports.listen = require('./nodeop').listen;

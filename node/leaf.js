@@ -12,6 +12,7 @@ class LeafNode extends Node {
         this._changeListeners = new Set();
         this._isFinalized = false;
         this._directEnumFlag = undefined;
+        this._extListeners = [];
     }
 
     finalizeDefinition () { this._isFinalized = true }
@@ -43,6 +44,8 @@ class LeafNode extends Node {
         for( let l of [...this._changeListeners] ) {
             l.nodeValueChanged(this);
         }
+        for( let f of this._extListeners )
+            f(this.value);
     }
     fireNodeValueSpoiled () {
         for( let l of [...this._changeListeners] ) {
@@ -122,5 +125,12 @@ class LeafNode extends Node {
 
     get [N] () { return this }
 
+    addExtListener(f) {
+        this._extListeners.push(f);
+    }
+    
+    rmExtListeners() {
+        this._extListeners = [];
+    }
 }
 exports.LeafNode = LeafNode;

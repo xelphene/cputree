@@ -4,7 +4,7 @@
 const {
     isComputeProxy,  computeProxyWrappedObject, endProxy,
     CTL, enumerable, PRE_FINAL_LEAF_VALUE,
-    isDTProxy, excOriginNode
+    isDTProxy, excOriginNode, excTopNode
 } = require('../consts');
 
 const LeafNode = require('./leaf').LeafNode;
@@ -54,6 +54,12 @@ class BaseComputeNode extends LeafNode {
     // called when:
     //  our compute function depends on an Input node value and that Input changes.
     nodeValueChanged(node) {
+        // ignore this from compute nodes
+        // they send nodeValueSpoiled which for us accomplishes the same
+        if( node instanceof BaseComputeNode ) {
+            this.log(`ignoring nodeValueChanged from ${node.debugName}`);
+            return;
+        }
         this.log(`heard nodeValueChanged from ${node.debugName}`);
         this._needsComputing = true;
         this.fireNodeValueSpoiled();
@@ -90,6 +96,16 @@ class BaseComputeNode extends LeafNode {
         } catch (e) {
             if( e instanceof errors.InputValidationError )
                 throw e;
+
+            if( ! e.hasOwnProperty(excTopNode) )
+                Object.defineProperty(e, excTopNode, {
+                    value: this,
+                    writable: true,
+                    enumerable: false
+                });
+            else
+                e[excTopNode] = this;
+                
             if( excOriginNode in e )
                 throw e;
             
@@ -111,8 +127,6 @@ class BaseComputeNode extends LeafNode {
                 value: this
             });
 
-            e.blah = 'blah';
-            
             throw e;
         }
         
@@ -133,7 +147,7 @@ class BaseComputeNode extends LeafNode {
         this._value = newValue;
         this._needsComputing = false;
 
-        this.log(`RECOMPUTED as ${this._valueStr}. _currentValueIsABranchNode==${this._currentValueIsABranchNode}`);
+        this.log(`RECOMPUTED as ${this._value}. _currentValueIsABranchNode==${this._currentValueIsABranchNode}`);
 
         //this.log(`computed as ${this._value}. will notify my listeners ${this.listenerNamesStr}.`);
         //for( let l of this._changeListeners ) {
@@ -142,7 +156,7 @@ class BaseComputeNode extends LeafNode {
         //}
 
         // TODO: why did I comment this out?
-        //this.fireNodeValueChanged();
+        this.fireNodeValueChanged();
     }
     
     // called only from the Proxy when a dependancy is found while executing
@@ -210,7 +224,11 @@ class BaseComputeNode extends LeafNode {
     
     get debugInfo () {
         let f = this._needsComputing ? 'stale' : 'fresh';
-        return `value: ${this.debugValue.toString()} (${f});  computeCount: ${this.computeCount};  listensToMe: ${this.listenerNamesStr};  listeningTo: ${this.listeningToStr}`
+        if( this.debugValue === undefined )
+            var dv = 'undefined';
+        else
+            var dv = this.debugValue.toString()
+        return `value: ${dv} (${f});  computeCount: ${this.computeCount};  listensToMe: ${this.listenerNamesStr};  listeningTo: ${this.listeningToStr}`
     }
     
     get valueStr () {

@@ -171,7 +171,6 @@ function finish_out_same(root)
     root.getProp('orig').getProp('inp0').value = 100;
     root.getProp('orig').getProp('s').getProp('i').value = 202;
     root.getProp('orig').getProp('j').value = 303;
-    console.log('######');
 
     root.computeIfNeeded();
     
