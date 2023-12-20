@@ -3,8 +3,19 @@
 
 const {
     ObjNode, C, N, O, listen, inpn, InputNode, GetSetNode,
-    nget, nset, root, enumerable
+    nget, nset, root, enumerable, bexist
 } = require('../index');
+
+function p(x,y) {
+    const r = {x,y};
+    Object.defineProperty(r, 'toString', {
+        get: function () {
+            return () => `${x}, ${y}`
+        },
+        enumerable: false
+    });
+    return r;
+}
 
 function getBoundedPoint() {
     var r = new ObjNode({});
@@ -12,6 +23,8 @@ function getBoundedPoint() {
     
     P.value = new InputNode({});
 
+    // TODO: expn could be converted to args here.
+    // they're all static.
     P.limit.xmin.value = () => -Infinity;
     P.limit.xmin.expn  = () => 'xmin';
     
@@ -57,14 +70,15 @@ function getBoundedPoint() {
 function getBox({bounds, spacing})
 {
     var r = new ObjNode({});
+    r.addSliderKey('$');
     var P = r[C];
 
     P.pts.br = getBoundedPoint();
-    P.pts.br.limit.xmin.value = function () { return this[root].pts.tl.value.x + spacing.x; }
+    P.pts.br.limit.xmin.value = function () { return this.$.pts.tl.value.x + spacing.x; }
     P.pts.br.limit.xmin.expn  = () => 'prox';
     P.pts.br.limit.xmax.value = function () { return bounds.xmax }
     P.pts.br.limit.xmin.expn  = () => 'bounds';
-    P.pts.br.limit.ymin.value = function () { return this[root].pts.tl.value.y + spacing.y; }
+    P.pts.br.limit.ymin.value = function () { return this.$.pts.tl.value.y + spacing.y; }
     P.pts.br.limit.ymin.expn  = () => 'prox';
     P.pts.br.limit.ymax.value = function () { return bounds.ymax }
     P.pts.br.limit.ymax.expn  = () => 'bounds';
@@ -72,28 +86,44 @@ function getBox({bounds, spacing})
     P.pts.tl = getBoundedPoint();
     P.pts.tl.limit.xmin.value = function () { return bounds.xmin }
     P.pts.tl.limit.xmin.expn  = () => 'bounds';
-    P.pts.tl.limit.xmax.value = function () { return this[root].pts.br.value.x - spacing.x }
+    P.pts.tl.limit.xmax.value = function () { return this.$.pts.br.value.x - spacing.x }
     P.pts.tl.limit.xmax.expn  = () => 'prox';
     P.pts.tl.limit.ymin.value = function () { return bounds.ymin }
     P.pts.tl.limit.ymin.expn  = () => 'bounds';
-    P.pts.tl.limit.ymax.value = function () { return this[root].pts.br.value.y - spacing.y }
+    P.pts.tl.limit.ymax.value = function () { return this.$.pts.br.value.y - spacing.y }
     P.pts.tl.limit.ymax.expn  = () => 'prox';
     
     return r;
 }
 
-function p(x,y) {
-    const r = {x,y};
-    Object.defineProperty(r, 'toString', {
-        get: function () {
-            return () => `${x}, ${y}`
-        },
-        enumerable: false
-    });
+function getUI({bounds, spacing})
+{
+    var r = new ObjNode({});
+    var P = r[C];
+    
+    P.model = getBox({bounds, spacing});
+    
+    P.ui.warn.prox = new InputNode({});
+    P.ui = bexist; // TODO: strange bug if this is omitted
+    P.ui.tl[nget] = function () { return this[root].model.pts.tl.value }
+    P.ui.tl[nset] = function (v) {
+        let r = this[root].model.pts.tl.set(v);
+        if( r.has('prox') )
+            this.warn.prox = true;
+        else
+            this.warn.prox = false;
+    }
+    
+    P.ui.br[nget] = function () {
+        return this[root].model.pts.br.value;
+    }
+    
+    
     return r;
 }
 
-var r = getBox({
+
+var r = getUI({
     bounds: {
         xmin: 0,
         ymin: 0,
@@ -109,14 +139,25 @@ var r = getBox({
 //r.logStruct();
 
 r.init({
-    pts: {
-        tl: { value: p(15,15)   },
-        br: { value: p(100,200) },
+    model: {
+        pts: {
+            tl: { value: p(15,15)   },
+            br: { value: p(100,200) },
+        },
+    },
+    warn: {
+        proxy: false
     }
 });
 
-listen( r.nav('pts.br.value'), v => console.log(`>>> br: ${v.x}, ${v.y}`) );
-listen( r.nav('pts.tl.value'), v => console.log(`>>> tl: ${v.x}, ${v.y}`) );
+listen( r.nav('model.pts.br.value'), v => console.log(`>>> br: ${v.x}, ${v.y}`) );
+listen( r.nav('model.pts.tl.value'), v => console.log(`>>> tl: ${v.x}, ${v.y}`) );
+listen( r.nav('ui.warn.prox'), v => {
+    if( v )
+        console.log('>>> PROX WARNING') 
+    else
+        console.log('>>> no prox warning');
+});
 
 var o = r[O];
 console.log(o);
@@ -141,6 +182,6 @@ for( let [x,y] of settings ) {
     let pt = p(x,y);
     console.log('');
     console.log(`SET ${pt}`);
-    console.log( o.pts.tl.set( pt ) );
-    console.log( o );
+    console.log( o.ui.tl = pt );
+    console.log( o.model.pts.tl );
 }

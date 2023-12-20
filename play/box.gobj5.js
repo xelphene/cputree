@@ -49,6 +49,10 @@ function getBox({bounds, spacing})
         [ (t,v) => v.y >= t.pts.tl.limit.ymin, t => t.pts.tl.limit.ymin ],
     ]);
     
+    t.sanitize( T.pts.tl.val, [
+        (t,v) => v.x <= t.pts.tl.limit.xmax ? [t.pts.tl.limit.xmax, ['prox']],
+    ]);
+    
     return T;
 }
 
