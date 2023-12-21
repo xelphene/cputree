@@ -71,13 +71,18 @@ beforeEach( () =>
     p.subobj.smap2[bfunc] = true;
 
 
+    /*
     root.finalizeEntireTree();
-        
     root.getProp('inpA').value = 'Az';
     root.getProp('inp1').value = 10;
     root.getProp('dx').value = 1000;
-
     root.computeIfNeeded();
+    */
+    root.init({
+        inpA: 'Az',
+        inp1: 10,
+        dx: 1000
+    });
 });
 
 test('init', () => {

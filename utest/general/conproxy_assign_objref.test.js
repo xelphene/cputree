@@ -77,9 +77,15 @@ beforeEach( () => {
     
     ////////////////////////////////////////////
 
-    root.finalizeEntireTree();
-    root.rawObject.isrc.i = 2;
-    root.rawObject.dx = 10;
+    //root.finalizeEntireTree();
+    //root.rawObject.isrc.i = 2;
+    //root.rawObject.dx = 10;
+    root.init({
+        isrc: {
+            i: 2
+        },
+        dx: 10
+    });
 
     root.computeIfNeeded();
 })

@@ -30,12 +30,15 @@ exports.NavError = NavError;
 
 
 class InputValidationError extends Error {
-    constructor(node, value, error, onAssign) {
+    constructor({node, value, error, onInit, isDefault}) {
         //var escValue = JSON.stringify(value.toString());
-        if( onAssign ) {
-            var msg = `Input validation failure setting ${node.fullName} to ${value}: ${error}`;
+        if( onInit ) {
+            if( isDefault )
+                var msg = `Input validation failure initializing ${node.fullName} to ${value} (the default): ${error}`;
+            else
+                var msg = `Input validation failure initializing ${node.fullName} to ${value} (specified): ${error}`;
         } else {
-            var msg = `No value ever assigned to input ${node.fullName} and the default, ${JSON.stringify(value)}, is invalid: ${error}`;
+            var msg = `Input validation failure setting ${node.fullName} to ${value}: ${error}`;
         }
         
         super(msg);

@@ -33,8 +33,9 @@ beforeEach( () =>
     })
     c.add('cn3', c_cn3);
 
-    root.finalizeEntireTree();
-    root.computeIfNeeded();
+    //root.finalizeEntireTree();
+    //root.computeIfNeeded();
+    root.init();
 });
 
 test('Node.nearestCommonAncestor works', () => 

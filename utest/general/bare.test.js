@@ -62,11 +62,17 @@ beforeEach( () => {
     }));
 
     
-    root.finalizeEntireTree();
-
-    root.getProp('ix').value = ix;
-    root.getProp('dx').value = dx;
-    root.getProp('sub').getProp('i').value = sub_i;
+    //root.finalizeEntireTree();
+    //root.getProp('ix').value = ix;
+    //root.getProp('dx').value = dx;
+    //root.getProp('sub').getProp('i').value = sub_i;
+    root.init({
+        ix,
+        dx,
+        sub: {
+            i: sub_i
+        }
+    });
 
     root.computeIfNeeded();
 });

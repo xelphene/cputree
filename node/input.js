@@ -16,11 +16,10 @@ class InputNode extends LeafNode {
             this._validate = validate;
             
         this._defaultValue = defaultValue;
-        this._value = defaultValue;
-        
-        this._valueEverSet = false;
+        this._value = undefined;
+        this._valueInited = false;
 
-        this._needsComputing = false;
+        this._needsComputing = true;
         this._computeCount = 0;
         
         this._linkSrcPath = undefined;
@@ -41,23 +40,38 @@ class InputNode extends LeafNode {
     get nodeType () { return 'input' }    
     get nodeAbbr () { return 'inp' }
 
-    _setValue(v) {
-        if( this.isLinked )
-            throw new Error('_setValue on a linked Inputnode');
+    initValue( haveInitValue, initValue ) {
+        if( this._valueInited )
+            throw new Error(`${this.fullName} was already initialized`);
+
+        if( haveInitValue )
+            this._setValue(initValue, true, false);
+        else
+            this._setValue(this._defaultValue, true, true);
         
-        var [valid, error] = this.validate(this, v);
+        this.log(`initted to ${this._value}`);
+        this._valueInited = true;
+    }
+    
+    get valueInited () { return this._valueInited }
+
+    _setValue(v, onInit, isDefault) {
+        let valResult = this.validate(this, v);
+        let [valid, error, newValue] = valResult;
+
         if( ! valid )
-            throw new InputValidationError(this, v, error, true);
+            throw new InputValidationError({
+                node:this,
+                value:v,
+                error,
+                onInit,
+                isDefault
+            });
         
-        this._valueEverSet = true;
+        if( valResult.length==3 )
+            v = newValue;
+        
         this._value = v;
-        this._computeCount++;
-        this.log(`set to ${v}. will notify my listeners ${this.listenerNamesStr}.`);
-        //for( let l of this._changeListeners ) {
-        //for( let l of [...this._changeListeners] ) {
-        //    l.nodeChanged(this);
-        //}
-        this.fireNodeValueChanged();
     }
 
     get settable () { return ! this.isLinked }
@@ -73,27 +87,25 @@ class InputNode extends LeafNode {
         }
         else
         {
-            if( ! this._valueEverSet ) {
-                var [valid, error] = this.validate(this, this._value);
-                if( ! valid )
-                    throw new InputValidationError(this, this._value, error, false);
-                // the value is now "set" to undefined, which is now confirmed to 
-                // be a valid value for this particular InputNode.
-                this._valueEverSet = true;
-            }
-            return this._value; 
+            if( ! this._valueInited )
+                throw new Error(`Uninitialized InputNode ${this.fullName}`);
+            return this._value;
         }
     }
 
-    set value (v) {
-        if( this.isLinked )
-            throw new Error(`Unable to set a value on a linked input node`);
-        this._setValue(v);
-        return v;
-    }
+    set value (v) { return this.setValue(v) }
 
     setValue(v) {
-        this._setValue(v);
+        if( this.isLinked )
+            throw new Error(`Unable to set a value on a linked input node`);
+
+        this._setValue(v, false, false);
+        this._computeCount++;
+
+        this.log(`set to ${v}. will notify my listeners ${this.listenerNamesStr}.`);
+        this.fireNodeValueChanged();
+        
+        return this._value;
     }
 
     get defaultValue () { return this._defaultValue }
@@ -179,7 +191,7 @@ class InputNode extends LeafNode {
     }
 
     // called when:
-    //  we're mapping from an Input node and that Input is set to a new value.
+    //  we're linked to another InputNode and that Input is set to a new value.
     nodeValueChanged(node) {
         if( ! this.isLinked )
             throw new Error(`An unlinked InputNode should never hear nodeValueChanged.`); 
@@ -203,22 +215,26 @@ class InputNode extends LeafNode {
     }
 
     recompute() {
-        if( ! this.isLinked ) return;
+        if( this.isLinked )
+        {
+            var v = this._linkSrcNode.value;
+            var [valid, error] = this.validate(this, v);
+            if( ! valid )
+                throw new InputLinkValidationError({
+                    node: this,
+                    srcNode: this._linkSrcNode,
+                    value: v,
+                    error
+                });
         
-        var v = this._linkSrcNode.value;
-        var [valid, error] = this._validate(this, v);
-        if( ! valid )
-            throw new InputLinkValidationError({
-                node: this,
-                srcNode: this._linkSrcNode,
-                value: v,
-                error
-            });
-        
-        this._value = v;
-        this._needsComputing = false;
-        this._computeCount++;
-        this.log(`RECOMPUTED as ${this._value}`);
+            this._value = v;
+            this._needsComputing = false;
+            this._computeCount++;
+            this.log(`RECOMPUTED as ${this._value}`);
+        } else {
+            if( ! this.valueInited )
+                throw new Error(`recompute() on Uninitialized InputNode ${this.fullName}`);
+        }
         
         // not needed because we do fireNodeValueSpoiled() in the nodeValue*() methods.
         //this.fireNodeValueChanged();

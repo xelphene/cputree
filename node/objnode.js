@@ -101,15 +101,22 @@ class ObjNode extends Node {
         if( ! this.isRoot )
             throw new Error('init() should only be called from the root node');
 
-        this.finalize();
+        this._finalizeEntireTree();
+        
         if( initialInput !== undefined )
-            this.applyInput(initialInput);
+            this.applyInput(initialInput, true);
+        
+        for( let i of this.iterTreeInputUnlinked() ) {
+            if( ! i.valueInited )
+                i.initValue(false);
+        }
+        
         this.computeIfNeeded();
     }
 
-    finalize () { this.finalizeEntireTree(); }
+    //finalize () { this.finalizeEntireTree(); }
     
-    finalizeEntireTree () {
+    _finalizeEntireTree () {
         if( ! this.isRoot )
             throw new Error('finalizeEntireTree() should only be called from the root node');
         
@@ -762,15 +769,18 @@ class ObjNode extends Node {
         }
     }
     
-    applyInput(input) {
+    applyInput(input, init) {
         var unused = Object.assign({},input);
         for( let k of allOwnKeys(input) ) {
             if( this.hasUnlinkedInputWithKey(k) ) {
-                this._inputs[k].value = input[k];
+                if( init ) {
+                    this._inputs[k].initValue( true, input[k] );
+                } else
+                    this._inputs[k].setValue( input[k] );
                 delete unused[k];
             }
             if( typeof(input[k])=='object' && this.hasObjWithKey(k) ) {
-                let u = this.getProp(k).applyInput(input[k]);
+                let u = this.getProp(k).applyInput(input[k], init);
                 if( allOwnKeys(u).length > 0 )
                     unused[k] = u;
                 else

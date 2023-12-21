@@ -35,12 +35,23 @@ test('getMapOut_graft', () =>
     };
 
     root.add('xf', new InputNode({}));
-    root.finalizeEntireTree();
-
-    root.getc('xf').value = 10;
-    root.getc('mb').getc(mioSrcBranch).getc('s').getc('i').value = 202;
-    root.getc('mb').getc(mioSrcBranch).getc('inp0').value = 100;
-    root.getc('mb').getc(mioSrcBranch).getc('j').value = 303;
+    //root.finalizeEntireTree();
+    //root.getc('xf').value = 10;
+    //root.getc('mb').getc(mioSrcBranch).getc('s').getc('i').value = 202;
+    //root.getc('mb').getc(mioSrcBranch).getc('inp0').value = 100;
+    //root.getc('mb').getc(mioSrcBranch).getc('j').value = 303;
+    
+    root.init({
+        xf:10,
+        mb: {
+            [mioSrcBranch]: {
+                s: { i: 202 },
+                inp0: 100,
+                j: 303
+            }
+        }
+    });
+    
 
     root.computeIfNeeded();
     
@@ -128,13 +139,21 @@ function finish_bi(root)
     };
 
     root.add('xf', new InputNode({}));
-    root.finalizeEntireTree();
+    //root.finalizeEntireTree();
+    //root.nav('xf').value = 10;
+    //root.nav('mb.inp0').value = 100;
+    //root.nav('mb.s.i').value = 202;
+    //root.nav('mb.j').value = 303;
     
+    root.init({
+        xf:10,
+        mb: {
+            inp0: 100,
+            s: { i: 202 },
+            j: 303
+        }
+    });
     
-    root.nav('xf').value = 10;
-    root.nav('mb.inp0').value = 100;
-    root.nav('mb.s.i').value = 202;
-    root.nav('mb.j').value = 303;
 
     root.computeIfNeeded();
     // root.mb.s.c0 == -89 == -root.mb.inp0 + 1 + xf
@@ -166,11 +185,20 @@ function finish_bi(root)
 function finish_out_same(root)
 {
     root.add('xf', new InputNode({}));
-    root.finalizeEntireTree();
-    root.getProp('xf').value = 10;
-    root.getProp('orig').getProp('inp0').value = 100;
-    root.getProp('orig').getProp('s').getProp('i').value = 202;
-    root.getProp('orig').getProp('j').value = 303;
+    //root.finalizeEntireTree();
+    //root.getProp('xf').value = 10;
+    //root.getProp('orig').getProp('inp0').value = 100;
+    //root.getProp('orig').getProp('s').getProp('i').value = 202;
+    //root.getProp('orig').getProp('j').value = 303;
+    
+    root.init({
+        xf:10,
+        orig: {
+            inp0:100,
+            s: { i: 202 },
+            j: 303
+        }
+    });
 
     root.computeIfNeeded();
     

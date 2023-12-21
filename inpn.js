@@ -6,9 +6,11 @@ const {InputNode} = require('./node/');
 var inputValidators = {};
 
 inputValidators.number = (node, value) => {
-    if( typeof(value)=='number' ) {
+    if( typeof(value)=='number' )
         return [true, ''];
-    } else {
+    else if( typeof(value)=='string' && !isNaN(Number(value)) )
+        return [true, '', Number(value)];
+    else {
         return [false, `number required; got ${typeof(value)}`];
     }
 };

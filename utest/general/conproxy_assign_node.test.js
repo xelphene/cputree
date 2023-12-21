@@ -35,10 +35,12 @@ test('conproxy reassign', () =>
     
     ////////////////////////////////////////////
     
-    oa.finalizeEntireTree();
-    oa.getProp('i1').value = 'i1value';
-    
-    oa.computeIfNeeded();
+    //oa.finalizeEntireTree();
+    //oa.getProp('i1').value = 'i1value';
+    //oa.computeIfNeeded();
+    oa.init({
+        i1: 'i1value'
+    });
     
     //oa.logStruct();
      

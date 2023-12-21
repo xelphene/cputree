@@ -60,17 +60,33 @@ beforeEach( () =>
     //console.log('');
     //console.log('//////');
     //console.log('');
-    
+
+    /*    
     root.finalizeEntireTree();
-    
     root.getProp('isrc').getProp('inp0').value = 0;
     root.getProp('isrc').getProp('inp1').value = 1;
     root.getProp('isrc').getProp('s1').getProp('inp2').value = 2;
     root.getProp('b').getProp('isrc').getProp('inp0').value = 1000;
     root.getProp('b').getProp('isrc').getProp('inp1').value = 1001;
     root.getProp('b').getProp('isrc').getProp('s1').getProp('inp2').value = 1002;
-
     root.computeIfNeeded();
+    */
+    root.init({
+        isrc: {
+            inp0: 0,
+            inp1: 1,
+            s1: {
+                inp2: 2
+            }
+        },
+        b: {
+            isrc: {
+                inp0: 1000,
+                inp1: 1001,
+                s1: { inp2: 1002 }
+            }
+        }
+    });
 
     //root.logStruct();
 });

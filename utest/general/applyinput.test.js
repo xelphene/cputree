@@ -41,14 +41,15 @@ beforeEach( () => {
     root = new ObjNode({});
     var p = root.getConProxy();
     
-    p.n2 = inpn.number();
-    p[SYM] = inpn.number();
+    p.n2 = inpn.numberOrUndef();
+    p[SYM] = inpn.numberOrUndef();
     p.s = new ObjNode({});
-    p.s.x = inpn.number();
-    p.s[SYM] = inpn.number();
+    p.s.x = inpn.numberOrUndef();
+    p.s[SYM] = inpn.numberOrUndef();
     
 
-    root.finalizeEntireTree();
+    //root.finalizeEntireTree();
+    root.init();
     //root.logStruct();
 });
 
