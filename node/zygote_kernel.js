@@ -87,6 +87,45 @@ class InputKernel {
     }
 }
 
+class MapKernel {
+    constructor(node, mapGetFunc, bindings, srcNode) {
+        this._node = node;
+        this._mapGetFunc = mapGetFunc;
+        for( let i=0; i<bindings.length; i++ )
+            if( ! (bindings[i] instanceof Node) )
+                throw new Error(`Node instance required for binding ${i}`);
+        this._bindings = bindings;
+        this._srcNode = srcNode;
+        this._node.dependencyFound(this._srcNode);
+    }
+    
+    get settable () { return false }
+    
+    _getArgs() {
+        var rv = [];
+        for( let b of this._bindings ) {
+            if( b instanceof LeafNode ) {
+                this._node.dependencyFound(b)
+                rv.push( b.value )
+            } else {
+                rv.push( b.getDTProxyOverMe({
+                    overNode: b,
+                    rcvr: this._node,
+                    purpose: 'compute'
+                }));
+            }
+        }
+        rv.push( this._srcNode.value );
+        return rv;
+    }
+    
+    getValue() {
+        return this._mapGetFunc.apply(null, this._getArgs() );
+    }
+}
+
+////////////////////////////////////////////////////
+
 function makeKernel(node, nodeDef)
 {
     if( nodeDef.type=='const' )
@@ -95,19 +134,23 @@ function makeKernel(node, nodeDef)
         return new GetKernel(node, nodeDef.func, nodeDef.bind);
     else if( nodeDef.type=='input' )
         return new InputKernel(node, nodeDef.defaultValue);
+    else if( nodeDef.type=='map' )
+        return new MapKernel( node, nodeDef.mapGetFunc, nodeDef.bind, nodeDef.src);
     else
         throw new Error(`unknown nodeDef.type: ${nodeDef.type}`);
 }
 exports.makeKernel = makeKernel;
 
-function isKernelTypeSettable(kernelType) {
-    if( kernelType=='const' )
+function isKernelDefSettable(nodeDef) {
+    if( nodeDef.type=='const' )
         return false;
-    else if( kernelType=='get' )
+    else if( nodeDef.type=='get' )
         return false;
-    else if( kernelType=='input' )
+    else if( nodeDef.type=='input' )
         return true;
-    else
-        throw new Error(`unknown kernel type ${kernelType}`);
+    else if( nodeDef.type=='map' ) {
+        return nodeDef.mapSetFunc!==undefined;
+    } else
+        throw new Error(`unknown kernel type ${nodeDef}`);
 }
-exports.isKernelTypeSettable = isKernelTypeSettable;
+exports.isKernelDefSettable = isKernelDefSettable;

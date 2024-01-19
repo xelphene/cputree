@@ -5,7 +5,7 @@ const {Node} = require('./node');
 const {LeafNode} = require('./leaf');
 const {anyToString} = require('../util');
 const {BaseComputeNode} =  require('./compute');
-const {isKernelTypeSettable, makeKernel} = require('./zygote_kernel');
+const {isKernelDefSettable, makeKernel} = require('./zygote_kernel');
 
 class ZygoteNode extends LeafNode 
 {
@@ -31,7 +31,7 @@ class ZygoteNode extends LeafNode
         this._kernel = makeKernel(this, this._nodeDef);
     }
     
-    get settable () { return isKernelTypeSettable(this._nodeDef.type) }
+    get settable () { return isKernelDefSettable(this._nodeDef) }
     setValue(v) {
         if( this._kernel.setValue(v) ) {
             this._fresh = false;

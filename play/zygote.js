@@ -9,6 +9,7 @@ root.addc( 'c222', new GetSetNode({getter: () => 222}) );
 root.addc( 'c1',   new GetSetNode({getter: () => 1}) );
 root.addc( 'i1',   new InputNode({}) );
 root.addc( 'i2',   new InputNode({}) );
+root.addc( 'i_n',  new InputNode({}) );
 
 root.addc( 'z1', new ZygoteNode({}) );
 
@@ -35,11 +36,24 @@ root.addc( 'zc_i_2', new ZygoteNode({
     }
 }));
 
+root.addc( 'zm_zi', new ZygoteNode({
+    nodeDef: {
+        type: 'map',
+        src:  root.getc('zi'),
+        mapGetFunc: (t,v) => v * t.i_n,
+        mapSetFunc: (t,v) => v * t.i_n,
+        bind: [root]
+    }
+}));
+
+//////////////////////////////////////
+
 root.logStruct();
 
 root.init({
     i1: 300,
-    i2: 2
+    i2: 2,
+    i_n: -1,
 });
 var o = root.rawObject;
 console.log('---');
@@ -60,3 +74,11 @@ root.logStruct();
 console.log('---');
 
 console.log(o.zc_i_2);
+console.log('---');
+
+root.computeIfNeeded();
+root.logStruct();
+console.log('---');
+
+o.i_n = 1;
+console.log( o.zm_zi );
