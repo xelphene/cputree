@@ -51,6 +51,18 @@ class LeafNode extends Node {
         this._listeningTo.delete(otherNode);
     }
 
+    get hearingFrom    () { return [...this._listeningTo]; }
+    get hearingFromStr () { return this.hearingFrom.map( n => n.debugName ).join(', ') }
+    isListeningTo (n) {
+        for( let n2 of this._listeningTo )
+            if( n===n2 )
+                return true;
+        return false;
+    }
+    get listeningToStr () {
+        return [...this._listeningTo].map(n => n.debugName).join(', ')
+    }
+
     fireNodeValueChanged () {
         for( let l of [...this._changeListeners] ) {
             l.nodeValueChanged(this);
