@@ -47,6 +47,7 @@ class GetSetNode extends BaseComputeNode {
     get nodeAbbr () { return 'gst' }
     
     get hasSetter () { return this._setFunc !== undefined }
+    get settable  () { return this._setFunc !== undefined }
     
     setValue(newValue) {
         if( ! this.isFinalized )

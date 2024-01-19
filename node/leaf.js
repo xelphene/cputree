@@ -13,6 +13,7 @@ class LeafNode extends Node {
         this._isFinalized = false;
         this._directEnumFlag = undefined;
         this._extListeners = [];
+        this._listeningTo = new Set();
     }
 
     finalizeDefinition () { this._isFinalized = true }
@@ -40,6 +41,16 @@ class LeafNode extends Node {
     get listenerNamesStr() { return this.listenerNames.join(', ') }
     get speakingTo     () { return [...this._changeListeners]; }
     get speakingToStr  () { return this.speakingTo.map(  n => n.debugName ).join(', ') }
+
+    _listenTo(otherNode) {
+        this._listeningTo.add(otherNode);
+        otherNode.addChangeListener(this);
+    }
+    _unlistenTo(otherNode) {
+        otherNode.delChangeListener(this);
+        this._listeningTo.delete(otherNode);
+    }
+
     fireNodeValueChanged () {
         for( let l of [...this._changeListeners] ) {
             l.nodeValueChanged(this);
