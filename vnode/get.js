@@ -2,18 +2,24 @@
 'use strict';
 
 const {VNode} = require('./vnode');
+const {TNode} = require('../node/tnode');
 const {ObjNode} = require('../node/objnode');
+const {descFunc, anyToString} = require('../util');
 
 class GetVNode extends VNode {
     constructor(bindings, func) {
         super();
         for( let i=0; i<bindings.length; i++ )
-            //if( ! (bindings[i] instanceof Node) && ! (bindings[i] instanceof ANode))
-            if( ! (bindings[i] instanceof VNode) && !(bindings[i] instanceof ObjNode) )
+            if( 
+                ! (bindings[i] instanceof VNode) && 
+                ! (bindings[i] instanceof ObjNode) &&
+                ! (bindings[i] instanceof TNode)
+            ) {
                 throw new Error(`VNode instance required for binding ${i}`);
+            }
         
         this._bindings = bindings;
-        this._func = func;
+        this._getFunc = func;
         
         this._fresh = false;
         this._cachedValue = undefined;
@@ -25,9 +31,25 @@ class GetVNode extends VNode {
     get nodeType () { return 'vget' }
     get nodeAbbr () { return 'vgt' }
     get debugName () {
-        return `<<GetVNode ${JSON.stringify(this._func.toString())}>>`
+        return `<<GetVNode ${JSON.stringify(this._getFunc.toString())}>>`
     }
     get debugValue () { return this._cachedValue }
+    get debugLines () {
+        let rv = [];
+        rv.push(`class: ${this.constructor.name}`);
+        rv.push(`cachedValue: ${anyToString(this._cachedValue, 30)}`);
+        rv.push(`fresh: ${this.fresh}`);
+        rv.push(`getter: ${descFunc(this._getFunc, 30)}`);
+        rv.push(`computeCount: ${this.computeCount}`);
+        rv.push(`hearingFrom (${this._listeningTo.size}):`);
+        for( let n of this._listeningTo )
+            rv.push(`  ${n.debugName}`);
+        rv.push(`speakingTo (${this._changeListeners.size}):`);
+        for( let n of this._changeListeners )
+            rv.push(`  ${n.debugName}`);
+        return rv;
+    }
+    
     get computeCount () { return this._computeCount }
     
     dependencyFound(node) {
@@ -48,13 +70,12 @@ class GetVNode extends VNode {
         }
     }
     
-    // TODO: separate persisten listens (i.e. from bindings) from
+    // TODO: separate persistent listens (i.e. from bindings) from
     // those gathered via DTProxy. save persistent ones.
     _getArgs() {
         var rv = [];
         for( let b of this._bindings ) {
-            // TODO: handle TNodes
-            if( b instanceof VNode ) {
+            if( b instanceof VNode || b instanceof TNode ) {
                 this._listenTo(b);
                 rv.push( b.value )
             } else if( b instanceof ObjNode ) {
@@ -71,15 +92,15 @@ class GetVNode extends VNode {
         return rv;
     }
 
-    get value () {
+    getValue () {
         if( this._fresh )
             return this._cachedValue;
         else {
             // TODO: exc handling
             let args = this._getArgs();
-            //console.log(`CALL`);
+            //console.log(`CALL ${this.debugName}`);
             //console.log(args);
-            let v = this._func.apply(null, args);
+            let v = this._getFunc.apply(null, args);
             //console.log(v);
             //console.log(`^ end call`);
             this._cachedValue = v;
@@ -88,6 +109,7 @@ class GetVNode extends VNode {
             return v;
         }
     }
+    get value () { return this.getValue() }
     
     computeIfNeeded () {
         if( ! this._fresh )

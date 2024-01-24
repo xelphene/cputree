@@ -12,13 +12,26 @@ exports.allOwnValues = o => exports.allOwnKeys(o).map(
     k => o[k]
 );
 
-exports.anyToString = x => {
+exports.anyToString = (x, maxLen) => {
     if( typeof(x)=='undefined' )
-        return 'undefined';
+        var s = 'undefined';
     else if( typeof(x)=='symbol' )
-        return x.toString();
+        var s = x.toString();
     else if( x===null ) 
-        return 'null'
+        var s = 'null'
     else
-        return ''+x;
+        var s = ''+x;
+
+    if( maxLen!==undefined && s.length > maxLen )
+        return s.slice(0,maxLen-3) + '...';
+    else
+        return s;
+};
+
+exports.descFunc = (f, maxLen) => {
+    let js = JSON.stringify(f.toString()).slice(1,-1);
+    if( js.length > maxLen )
+        return js.slice(0,maxLen-3) + '...';
+    else
+        return js;
 };

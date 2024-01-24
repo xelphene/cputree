@@ -184,12 +184,20 @@ exports.getDTProxyHandler = function({overNode, rcvr, purpose})
 
     set(overNode, key, value) {
         log(`set ${key} = ${value}`);
-        if( ! overNode.hasc(key) )
-            throw new Error(`Node ${overNode.fullName} has no child named ${key}`);
-        if( ! overNode.hasInputWithKey(key) )
-            throw new Error(`Node ${overNode.getc(key).fullName} is not an InputNode`);
+        //if( ! overNode.hasc(key) )
+        //    throw new Error(`Node ${overNode.fullName} has no child named ${key}`);
+        //if( ! overNode.hasInputWithKey(key) )
+        //    throw new Error(`Node ${overNode.getc(key).fullName} is not an InputNode`);
+        //overNode.getc(key).value = value;
         
-        overNode.getc(key).value = value;
+        if( overNode.hasc(key) ) {
+            if( overNode.getc(key).settable )
+                overNode.getc(key).value = value;
+            else
+                throw new Error(`Node ${overNode.getc(key).fullName} is not settable`);
+        } else
+            throw new Error(`Node ${overNode.fullName} has no child named ${key}`);
+        
         return true; // need to return trueish for Proxy set or exception
         
         //return overNode.getc(key).value = value;

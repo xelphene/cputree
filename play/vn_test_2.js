@@ -1,7 +1,7 @@
 
 'use strict';
 
-const {GetVNode, InputVNode} = require('../vnode');
+const {GetVNode, InputVNode, GetSetVNode} = require('../vnode');
 const {ObjNode} = require('../node/objnode');
 const {TNode}   = require('../node/tnode');
 
@@ -20,27 +20,41 @@ R.addc('d', new TNode({ vNode: new GetVNode(
     [R], t => t.j**2
 )}));
 
+R.addc('e', new TNode({ vNode: new GetVNode(
+    [R.getc('j')], j => j**2 + 1
+)}));
+R.addc('e2', new TNode({ vNode: new GetVNode(
+    [R.getc('e')], e => e*10
+)}));
+
+
+R.addc('s', new TNode({ vNode: new GetSetVNode(
+    [R],
+    t => -t.i,
+    (t,v) => { t.i = -v }
+)}));
+
 R.init({});
 R.computeIfNeeded();
 R.logStruct();
 
 console.log('-');
+R.getc('s').value = -.5;
+R.computeIfNeeded();
+R.logStruct();
 
+console.log('-===-=-');
+
+console.log(  R.getc('s').vNode.debugLines )
+
+console.log('-===-=-');
+
+R.logDebug({maxNameLen:15});
+
+/*
+console.log('-');
 R.getc('i').value = 10;
 R.getc('j').value = 20;
 R.computeIfNeeded();
 R.logStruct();
-
-/*
-console.log( c.value );
-
-i.value = 0.2;
-
-console.log('////////////////');
-
-console.log( c.value );
-console.log( c.computeCount );
-console.log( c.value );
-console.log( c.computeCount );
-//console.log(c.hearingFrom);
 */

@@ -13,6 +13,11 @@ class InputVNode extends VNode {
 
     get debugName()  { return `<<input v=${this.value}>>` }
     get debugValue() { return this.value }
+    get debugLines () {
+        let rv = [];
+        rv.push(`class: ${this.constructor.name}`);
+        return rv;
+    }
 
     nodeValueChanged () { throw new Error('should never happen'); }
     nodeValueSpoiled () { throw new Error('should never happen'); }
