@@ -21,6 +21,7 @@ const {allOwnKeys, allOwnValues} = require('../util');
 const {toPath, Path} = require('../path');
 const NavError = require('../errors').NavError;
 const GetSetNode = require('./getset').GetSetNode;
+const TNode = require('./tnode').TNode;
 const {ZygoteNode}  =require('./zygote');
 
 class ObjNode extends Node {
@@ -227,7 +228,7 @@ class ObjNode extends Node {
         
         for( let c of this.iterComputeChildren() )
         {
-            if( c instanceof GetSetNode || c instanceof ZygoteNode ) {
+            if( c instanceof GetSetNode || c instanceof ZygoteNode || c instanceof TNode ) {
                 if( c.settable )
                     Object.defineProperty(this._o, c.key, {
                         get: () => c.value,
@@ -430,6 +431,8 @@ class ObjNode extends Node {
         else if( node instanceof BaseComputeNode )
             this._computes[key] = node;
         else if( node instanceof ZygoteNode )
+            this._computes[key] = node;
+        else if( node instanceof TNode )
             this._computes[key] = node;
         else if( node instanceof InputNode )
             this._inputs[key] = node;

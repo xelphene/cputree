@@ -10,6 +10,7 @@ const {
 
 const Node = require('./node').Node;
 const ANode = require('./anode').ANode;
+const VNode = require('../vnode/vnode').VNode;
 
 class MapDef {
     constructor(node, mapFunc) {
@@ -35,8 +36,8 @@ exports.getDTProxyHandler = function({overNode, rcvr, purpose})
                 dependencyFound: () => {}
             };
     } else {
-        if( ! (rcvr instanceof Node) && ! (rcvr instanceof ANode) )
-            throw new Error(`Node or ANode instance required for rcvr, not ${rcvr}`);
+        if( ! (rcvr instanceof Node) && ! (rcvr instanceof ANode) && !(rcvr instanceof VNode) )
+            throw new Error(`Node, ANode or VNode instance required for rcvr, not ${rcvr}`);
     }
     
     if( DEBUG )
