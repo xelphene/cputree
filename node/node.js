@@ -1,6 +1,8 @@
 
 'use strict';
 
+const {sprintf} = require('sprintf-js');
+
 const {
     ROOT_STR, NAME_SEP, DEBUG, parent, root, N, enumerable
 } = require('../consts');
@@ -183,7 +185,30 @@ class Node {
                     console.log(`${n.fullName}`);
         }
     }
-
+    
+    logDebug(opts) {
+        const {TNode} = require('./tnode');
+        if( typeof(opts)=='object' ) {
+            var includeNonEnumerable = opts.includeNonEnumerable;
+            var includeBranches = opts.includeBranches;
+            var maxNameLen = opts.maxNameLen;
+        }
+        if( includeNonEnumerable===undefined )
+            includeNonEnumerable = false;
+        if( includeBranches===undefined )
+            includeBranches = false;
+        if( maxNameLen===undefined )
+            maxNameLen = 50;
+        
+        for( let n of this.iterTree({includeNonEnumerable}) ) {
+            if( n.isLeaf || includeBranches )
+                console.log( sprintf(`%-${maxNameLen}s`, n.fullName) );
+            if( n instanceof TNode ) {
+                for( let l of n.vNode.debugLines )
+                    console.log( sprintf(`%-${maxNameLen}s %s`, '', l) );
+            }
+        }
+    }
 
     * iterAncestors () {
         yield this;
