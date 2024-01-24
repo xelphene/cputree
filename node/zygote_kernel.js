@@ -18,8 +18,9 @@ class ConstKernel {
 
 class GetKernel {
     constructor(node, func, bindings) {
+        const {ANode} = require('./anode');
         for( let i=0; i<bindings.length; i++ )
-            if( ! (bindings[i] instanceof Node) )
+            if( ! (bindings[i] instanceof Node) && ! (bindings[i] instanceof ANode))
                 throw new Error(`Node instance required for binding ${i}`);
         
         this._node = node;
@@ -39,9 +40,10 @@ class GetKernel {
     // our Node, in turns, tells all its listeners it spoild
     
     _getArgs() {
+        const {ANode} = require('./anode');
         var rv = [];
         for( let b of this._bindings ) {
-            if( b instanceof LeafNode ) {
+            if( b instanceof LeafNode || b instanceof ANode ) {
                 // TODO:localdep: make this listen directly to b
                 // do b.addChangeListener(this);
                 this._node.dependencyFound(b)

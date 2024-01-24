@@ -2,6 +2,7 @@
 'use strict';
 
 const {C, N, O, ObjNode, GetSetNode, InputNode} = require('../');
+const {ANode} = require('../node/anode');
 const {ZygoteNode} = require('../node/zygote');
 
 var root = new ObjNode({});
@@ -46,6 +47,27 @@ root.addc( 'zm_zi', new ZygoteNode({
     }
 }));
 
+//
+
+var an = new ANode({
+    nodeDef: {
+        type: 'get',
+        func: t => t.i1 + 1,
+        bind: [root]
+    }
+});
+// TODO: could just build this in to ANode
+// or make ANode take a Kernel instance
+an.finalizeDefinition();
+
+root.addc( 'a_get', new ZygoteNode({
+    nodeDef: {
+        type: 'get',
+        func: (t,a) => a + t.i2 + 1,
+        bind: [root, an]
+    }
+}));
+
 //////////////////////////////////////
 
 root.logStruct();
@@ -82,3 +104,11 @@ console.log('---');
 
 o.i_n = 1;
 console.log( o.zm_zi );
+console.log('==== anon');
+
+console.log( an.value );
+console.log( o.a_get );
+console.log('-');
+o.i1 = 500;
+console.log( an.value );
+console.log( o.a_get );
