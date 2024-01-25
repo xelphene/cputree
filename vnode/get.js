@@ -72,6 +72,9 @@ class GetVNode extends VNode {
     
     // TODO: separate persistent listens (i.e. from bindings) from
     // those gathered via DTProxy. save persistent ones.
+    // the persistent ones would be set up on finalization
+    // if we have the static deps optimization set, *all* listens are 
+    // persistent
     _getArgs() {
         var rv = [];
         for( let b of this._bindings ) {
@@ -80,6 +83,7 @@ class GetVNode extends VNode {
                 rv.push( b.value )
             } else if( b instanceof ObjNode ) {
                 // this Proxy will call this.dependencyFound
+                // OPT: cache the proxy returned here.
                 rv.push( b.getDTProxyOverMe({
                     overNode: b,
                     rcvr: this,
@@ -109,6 +113,9 @@ class GetVNode extends VNode {
             return v;
         }
     }
+    // both 'get value' and getValue exist because GetSetVNode overrides
+    // the setter but inherits the getter. this doesn't work with class
+    // getters and setters.
     get value () { return this.getValue() }
     
     computeIfNeeded () {
