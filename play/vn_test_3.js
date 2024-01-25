@@ -60,7 +60,7 @@ R.logDebug({maxNameLen:15});
 
 console.log('-'.repeat(80));
 
-R.getc('s').value = -.5;
+R.getc('s').setValue( -.5 );
 R.computeIfNeeded();
 R.logDebug({maxNameLen:15});
 
