@@ -203,8 +203,14 @@ class Node {
         for( let n of this.iterTree({includeNonEnumerable}) ) {
             if( n.isLeaf || includeBranches )
                 console.log( sprintf(`%-${maxNameLen}s`, n.fullName) );
+            /*
             if( n instanceof TNode ) {
                 for( let l of n.vNode.debugLines )
+                    console.log( sprintf(`%-${maxNameLen}s %s`, '', l) );
+            }
+            */
+            if( n instanceof TNode ) {
+                for( let l of n.debugLines )
                     console.log( sprintf(`%-${maxNameLen}s %s`, '', l) );
             }
         }

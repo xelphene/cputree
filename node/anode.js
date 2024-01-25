@@ -3,21 +3,13 @@
 
 const {DEBUG} = require('../path');
 const {BaseComputeNode} = require('./compute');
-const {isKernelDefSettable, makeKernel} = require('./zygote_kernel');
 
 class ANode {
-    constructor({nodeDef}) {
+    constructor({kernel}) {
         this._changeListeners = new Set();
         this._listeningTo = new Set();
         this._isFinalized = false;
 
-        if( nodeDef===undefined )
-            this._nodeDef = {
-                type: 'const',
-                value: 222
-            }
-        else
-            this._nodeDef = nodeDef
         this._cachedValue = null;
         this._computeCount = 0;
         this._fresh = false;
@@ -40,7 +32,6 @@ class ANode {
     //////////////////////////////////////////////////////////
 
     finalizeDefinition () {
-        this._kernel = makeKernel(this, this._nodeDef);
         this._isFinalized = true
     }
     get isFinalized () { return this._isFinalized }
@@ -91,7 +82,7 @@ class ANode {
 
     //////////////////////////////////////////////////////////
     
-    get settable () { return isKernelDefSettable(this._nodeDef) }
+    get settable () { return this._kernel.settable }
     setValue(v) {
         if( this._kernel.setValue(v) ) {
             this._fresh = false;

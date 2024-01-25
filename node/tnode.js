@@ -1,72 +1,74 @@
 
 'use strict';
 
-const {VNode} = require('../vnode/vnode');
+const {Kernel} = require('../kernel/kernel');
 const {LeafNode} = require('./leaf');
 
 // TODO: enumerability should be a property of a TNode
 
 class TNode extends LeafNode {
-    constructor({parent, vNode}) {
+    constructor({parent, kernel}) {
         super({parent});
-        if( vNode instanceof VNode || vNode===undefined )
-            this._vNode = vNode;
-        else
-            throw new TypeError(`VNode instance required`);
+        if( ! (kernel instanceof Kernel) ) 
+            throw new TypeError(`Kernel instance required`);
+
+        this._kernel = kernel;
+        this._kernel.attachNode(this);
     }
     
     get nodeType () { return 'tno' }
     get nodeAbbr () { return 'tnode' }
     get debugInfo () {
-        if( this.hasVNode )
-            return this.vNode.debugValue
-        else
-            return '(no VNode)'
+        return `${this.kernel.constructor.name} = ${this.kernel.debugValue}`;
     }
     
-    get vNode () {
-        if( ! this.hasVNode )
-            throw new Error(`${this.debugName} has no vNode`);
-        return this._vNode;
+    get debugLines () {
+        let rv = [];
+        
+        rv.push(`V: ${this.kernel.debugValue}`);
+        rv.push(`fresh: ${this.kernel.fresh}`);
+        rv.push(`kernel: ${this.kernel.constructor.name}`);
+        
+        rv.push(`speakingTo (${this._changeListeners.size}):`);
+        for( let n of this._changeListeners )
+            rv.push(`  ${n.fullName}`);
+        rv.push(`hearingFrom (${this._listeningTo.size}):`);
+        for( let n of this._listeningTo )
+            rv.push(`  ${n.fullName}`);
+        for( let l of this.kernel.debugLines )
+            rv.push(`K: ${l}`);
+        return rv;
     }
-    set vNode (vn) {
-        if( ! (vn instanceof VNode) )
-            throw new TypeError(`VNode instance required`);
-        this._vNode = vn;
+    
+    get kernel () {
+        return this._kernel;
     }
-    get hasVNode () { return this._vNode!==undefined }
+    /*
+    set kernel (k) {
+        if( ! (k instanceof Kernel) )
+            throw new TypeError(`Kernel instance required`);
+        this._kernel = k;
+    }
+    get hasVNode () { return this._kernel!==undefined }
+    */
     
     finalizeDefinition () {
-        if( ! this.hasVNode )
-            throw new Error(`${this.debugName} cannot finalize without a vNode ref`);
         super.finalizeDefinition();
     }
     
-    addChangeListener(node) {
-        // TODO: add info about our path, for debugging, somehow.
-        this.vNode.addChangeListener(node);
-    }
-    delChangeListener(node) {
-        this.vNode.delChangeListener(node);
-    }
-    
-    _listenTo(otherNode)    { throw new Error('should never happen'); }
-    _unlistenTo(otherNode)  { throw new Error('should never happen'); }
-    fireNodeValueChanged () { throw new Error('should never happen'); }
-    fireNodeValueSpoiled () { throw new Error('should never happen'); }
-    nodeValueChanged(node)  { throw new Error('should never happen'); }
-    nodeValueSpoiled(node)  { throw new Error('should never happen'); }
+    nodeValueChanged(node)  { this.kernel.nodeValueChanged(node) }
+    nodeValueSpoiled(node)  { this.kernel.nodeValueSpoiled(node) }
+
     dependencyFound(node)   { throw new Error('should never happen'); }
     
     computeIfNeeded () {
-        if( this.hasVNode )
-            this.vNode.computeIfNeeded();
+        this.kernel.computeIfNeeded();
     }
     
-    get settable () { return this.vNode.settable }
-    set value (v)   { this.vNode.value = v }
-    setValue(v)     { this.vNode.value = v }
-    get value ()    { return this.vNode.value }
-    getValue()      { return this.vNode.value }
+    get settable () { return this.kernel.settable }
+    set value (v)   { this.kernel.setValue(v) }
+    setValue(v)     { this.kernel.setValue(v) }
+    get value ()    { return this.getValue() }
+    getValue()      { return this.kernel.getValue() }
 }
 exports.TNode = TNode;
