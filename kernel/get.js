@@ -1,21 +1,22 @@
 
 'use strict';
 
-const {VNode} = require('./vnode');
+const {Kernel} = require('./kernel');
 const {TNode} = require('../node/tnode');
+const {ANode} = require('../node/anode');
 const {ObjNode} = require('../node/objnode');
 const {descFunc, anyToString} = require('../util');
 
-class GetVNode extends VNode {
+class GetKernel extends Kernel {
     constructor(bindings, func) {
         super();
         for( let i=0; i<bindings.length; i++ )
             if( 
-                ! (bindings[i] instanceof VNode) && 
                 ! (bindings[i] instanceof ObjNode) &&
-                ! (bindings[i] instanceof TNode)
+                ! (bindings[i] instanceof TNode) &&
+                ! (bindings[i] instanceof ANode)
             ) {
-                throw new Error(`VNode instance required for binding ${i}`);
+                throw new Error(`TNode | ObjNode instance required for binding ${i}`);
             }
         
         this._bindings = bindings;
@@ -28,25 +29,13 @@ class GetVNode extends VNode {
 
     get settable () { return false }
     get fresh    () { return this._fresh }
-    get nodeType () { return 'vget' }
-    get nodeAbbr () { return 'vgt' }
-    get debugName () {
-        return `<<GetVNode ${JSON.stringify(this._getFunc.toString())}>>`
-    }
+
     get debugValue () { return this._cachedValue }
+
     get debugLines () {
         let rv = [];
-        rv.push(`class: ${this.constructor.name}`);
-        rv.push(`cachedValue: ${anyToString(this._cachedValue, 30)}`);
-        rv.push(`fresh: ${this.fresh}`);
         rv.push(`getter: ${descFunc(this._getFunc, 30)}`);
         rv.push(`computeCount: ${this.computeCount}`);
-        rv.push(`hearingFrom (${this._listeningTo.size}):`);
-        for( let n of this._listeningTo )
-            rv.push(`  ${n.debugName}`);
-        rv.push(`speakingTo (${this._changeListeners.size}):`);
-        for( let n of this._changeListeners )
-            rv.push(`  ${n.debugName}`);
         return rv;
     }
     
@@ -54,19 +43,21 @@ class GetVNode extends VNode {
     
     dependencyFound(node) {
         this.log(`heard that I depend on ${node.debugName}`);
-        this._listenTo(node);
+        this.node._listenTo(node);
     }
     
     nodeValueChanged(node) {
         if( this.fresh ) {
+            this.log(`heard nodeValueChanged from ${node.debugName}`);
             this._fresh = false;
-            super.nodeValueChanged(node);
+            this.node.fireNodeValueSpoiled();
         }
     }
     nodeValueSpoiled(node) {
         if( this.fresh ) {
+            this.log(`heard nodeValueSpoiled from ${node.debugName}`);
             this._fresh = false;
-            super.nodeValueSpoiled(node);
+            this.node.fireNodeValueSpoiled();
         }
     }
     
@@ -78,8 +69,8 @@ class GetVNode extends VNode {
     _getArgs() {
         var rv = [];
         for( let b of this._bindings ) {
-            if( b instanceof VNode || b instanceof TNode ) {
-                this._listenTo(b);
+            if( b instanceof TNode || b instanceof ANode ) {
+                this.node._listenTo(b);
                 rv.push( b.value )
             } else if( b instanceof ObjNode ) {
                 // this Proxy will call this.dependencyFound
@@ -113,14 +104,10 @@ class GetVNode extends VNode {
             return v;
         }
     }
-    // both 'get value' and getValue exist because GetSetVNode overrides
-    // the setter but inherits the getter. this doesn't work with class
-    // getters and setters.
-    get value () { return this.getValue() }
     
     computeIfNeeded () {
         if( ! this._fresh )
-            this.value;
+            this.getValue();
     }
 }
-exports.GetVNode = GetVNode;
+exports.GetKernel = GetKernel;

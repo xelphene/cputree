@@ -1,9 +1,9 @@
 
 'use strict';
 
-const {VNode} = require('./vnode');
+const {Kernel} = require('./kernel');
 
-class InputVNode extends VNode {
+class InputKernel extends Kernel {
     constructor(defaultValue) {
         super();
         this._defaultValue = defaultValue;
@@ -11,36 +11,30 @@ class InputVNode extends VNode {
         this._assignedValue = null;
     }
 
-    get debugName()  { return `<<input v=${this.value}>>` }
-    get debugValue() { return this.value }
+    get debugValue() { return this.getValue() }
     get debugLines () {
         let rv = [];
-        rv.push(`class: ${this.constructor.name}`);
         return rv;
     }
 
     nodeValueChanged () { throw new Error('should never happen'); }
     nodeValueSpoiled () { throw new Error('should never happen'); }
-    _listenTo(otherNode) {throw new Error('should never happen'); }
-    _unlistenTo(otherNode) {throw new Error('should never happen'); }
-    fireNodeValueSpoiled () { throw new Error('should never happen'); }
-    
-    get nodeType () { return 'vinput'; }
-    get nodeAbbr () { return 'vin'; }
     
     get settable () { return true }
+
+    get fresh () { return true }
     
-    get value () {
+    getValue () {
         if( this._haveAssignedValue )
             return this._assignedValue;
         else
             return this._defaultValue;
     }
     
-    set value (v) {
+    setValue (v) {
         this._haveAssignedValue = true;
         this._assignedValue = v;
-        this.fireNodeValueChanged();
+        this.node.fireNodeValueChanged();
     }
 }
-exports.InputVNode = InputVNode;
+exports.InputKernel = InputKernel;

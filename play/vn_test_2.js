@@ -1,34 +1,37 @@
 
 'use strict';
 
-const {GetVNode, InputVNode, GetSetVNode} = require('../vnode');
+const {GetKernel, InputKernel, GetSetKernel} = require('../vnode');
 const {ObjNode} = require('../node/objnode');
 const {TNode}   = require('../node/tnode');
 
-var i = new InputVNode(0.1);
-var j = new InputVNode(0.2);
-var c = new GetVNode(
+var j = new InputKernel(0.2);
+var c = new GetKernel(
     [i, j], (i,j) => (i+j) * 10
 );
 
 var R = new ObjNode({});
-R.addc('i', new TNode({vNode: i}));
-R.addc('j', new TNode({vNode: j}));
-R.addc('c', new TNode({vNode: c}));
+R.addc('i', new TNode({  kernel: new InputKernel(0.1)  }));
+R.addc('j', new TNode({  kernel: new InputKernel(0.2)  }));
+R.addc('c', new TNode({
+    kernel: new GetKernel(
+        [i, j], (i,j) => (i+j) * 10
+    )
+}));
 
-R.addc('d', new TNode({ vNode: new GetVNode(
+R.addc('d', new TNode({ kernel: new GetKernel(
     [R], t => t.j**2
 )}));
 
-R.addc('e', new TNode({ vNode: new GetVNode(
+R.addc('e', new TNode({ kernel: new GetKernel(
     [R.getc('j')], j => j**2 + 1
 )}));
-R.addc('e2', new TNode({ vNode: new GetVNode(
+R.addc('e2', new TNode({ kernel: new GetKernel(
     [R.getc('e')], e => e*10
 )}));
 
 
-R.addc('s', new TNode({ vNode: new GetSetVNode(
+R.addc('s', new TNode({ kernel: new GetSetKernel(
     [R],
     t => -t.i,
     (t,v) => { t.i = -v }

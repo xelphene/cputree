@@ -2,7 +2,7 @@
 'use strict';
 
 const {DEBUG} = require('../path');
-const {BaseComputeNode} = require('./compute');
+const {Kernel} = require('../kernel/kernel');
 
 class ANode {
     constructor({kernel}) {
@@ -10,9 +10,10 @@ class ANode {
         this._listeningTo = new Set();
         this._isFinalized = false;
 
-        this._cachedValue = null;
-        this._computeCount = 0;
-        this._fresh = false;
+        if( ! (kernel instanceof Kernel) ) 
+            throw new TypeError(`Kernel instance required`);
+        this._kernel = kernel;
+        this._kernel.attachNode(this);
     }
 
     //////////////////////////////////////////////////////////
@@ -20,8 +21,34 @@ class ANode {
     get nodeType () { return 'anode' }
     get nodeAbbr () { return 'and' }
 
-    get debugName () { return '(anon)' }
-    get fullName  () { return '(anon)' }
+    get debugName () { return '<anon>' }
+    get fullName  () { return '<anon>' }
+
+    get debugInfo () {
+        return `${this.kernel.constructor.name} = ${this.kernel.debugValue}`;
+    }
+    get debugLines () {
+        let rv = [];
+        
+        rv.push(`V: ${this.kernel.debugValue}`);
+        rv.push(`fresh: ${this.kernel.fresh}`);
+        rv.push(`kernel: ${this.kernel.constructor.name}`);
+        
+        rv.push(`speakingTo (${this._changeListeners.size}):`);
+        for( let n of this._changeListeners )
+            rv.push(`  ${n.fullName}`);
+        rv.push(`hearingFrom (${this._listeningTo.size}):`);
+        for( let n of this._listeningTo )
+            rv.push(`  ${n.fullName}`);
+        for( let l of this.kernel.debugLines )
+            rv.push(`K: ${l}`);
+        return rv;
+    }
+    
+    get kernel () {
+        return this._kernel;
+    }
+
 
     log (m) {
         if( DEBUG ) {
@@ -82,58 +109,22 @@ class ANode {
 
     //////////////////////////////////////////////////////////
     
-    get settable () { return this._kernel.settable }
-    setValue(v) {
-        if( this._kernel.setValue(v) ) {
-            this._fresh = false;
-            this.fireNodeValueChanged();
-        }
-    }
-    getValue()  {
-        if( this._fresh )
-            return this._cachedValue;
-        else {
-            let v = this._kernel.getValue();
-            this._cachedValue = v;
-            this._fresh = true;
-            this._computeCount++;
-            return v;
-        }
-    }
-    get value () { return this.getValue() }
+    nodeValueChanged(node)  { this.kernel.nodeValueChanged(node) }
+    nodeValueSpoiled(node)  { this.kernel.nodeValueSpoiled(node) }
+
+    dependencyFound(node)   { throw new Error('should never happen'); }
+
+    //////////////////////////////////////////////////////////
     
-    
-    computeIfNeeded() { this.getValue() }
-    
-    // dep handling
-    
-    dependencyFound(node) {
-        this.log(`heard that I depend on ${node.debugName}`);
-        this._listenTo(node);
+    computeIfNeeded () {
+        this.kernel.computeIfNeeded();
     }
     
-    // called when:
-    //  our compute function depends on an Input node value and that Input changes.
-    nodeValueChanged(node) {
-        // ignore this from compute nodes
-        // they send nodeValueSpoiled which for us accomplishes the same
-        if( node instanceof BaseComputeNode ) {
-            this.log(`ignoring nodeValueChanged from ${node.debugName}`);
-            return;
-        }
-        this.log(`heard nodeValueChanged from ${node.debugName}`);
-        this._fresh = false;
-        this.fireNodeValueSpoiled();
-    }
-    
-    // called when: 
-    //  our compute function depends on some Leaf node value and it spoliates.
-    nodeValueSpoiled(node) {
-        if( this._needsComputing ) { return };
-        this.log(`heard nodeValueSpoiled from ${node.debugName}`);
-        this._fresh = false;
-        this.fireNodeValueSpoiled();
-    }
+    get settable () { return this.kernel.settable }
+    set value (v)   { this.kernel.setValue(v) }
+    setValue(v)     { this.kernel.setValue(v) }
+    get value ()    { return this.getValue() }
+    getValue()      { return this.kernel.getValue() }
 
 }
 exports.ANode = ANode;

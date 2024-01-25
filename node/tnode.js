@@ -9,19 +9,19 @@ const {LeafNode} = require('./leaf');
 class TNode extends LeafNode {
     constructor({parent, kernel}) {
         super({parent});
+
         if( ! (kernel instanceof Kernel) ) 
             throw new TypeError(`Kernel instance required`);
-
         this._kernel = kernel;
         this._kernel.attachNode(this);
     }
     
     get nodeType () { return 'tno' }
     get nodeAbbr () { return 'tnode' }
+
     get debugInfo () {
         return `${this.kernel.constructor.name} = ${this.kernel.debugValue}`;
     }
-    
     get debugLines () {
         let rv = [];
         
