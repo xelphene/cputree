@@ -1,7 +1,9 @@
 
 'use strict';
 
-const {GetKernel, InputKernel, GetSetKernel} = require('../kernel');
+const {
+    GetKernel, InputKernel, GetSetKernel, MapGetKernel, MapGetBoundKernel
+} = require('../kernel');
 
 const {ObjNode} = require('../node/objnode');
 const {TNode}   = require('../node/tnode');
@@ -33,6 +35,24 @@ R.addc('a', new TNode({
         [R, anonNode], (t, an) => an * 10 + t.j
     )
 }));
+
+var mapFuncNode = new ANode({
+    kernel: new GetKernel(
+        [R, R.getc('c')], (t,c) => v => t.j * v - c
+    )
+});
+
+R.addc('m', new TNode({
+    kernel: new MapGetKernel( mapFuncNode, R.getc('a') )
+}));
+
+R.addc('mb', new TNode({
+    kernel: new MapGetBoundKernel(
+        [R, R.getc('c')], (t,c,v) => t.j * v - c,
+        R.getc('a')
+    )
+}));
+    
 
 R.init({});
 R.computeIfNeeded();
