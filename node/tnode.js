@@ -4,8 +4,6 @@
 const {Kernel} = require('../kernel/kernel');
 const {LeafNode} = require('./leaf');
 
-// TODO: enumerability should be a property of a TNode
-
 class TNode extends LeafNode {
     constructor({parent, kernel}) {
         super({parent});
@@ -19,6 +17,14 @@ class TNode extends LeafNode {
     get nodeType () { return 'tno' }
     get nodeAbbr () { return 'tnode' }
 
+    get debugName () { return this.fullName }
+    get fullName () {
+        if( this.isRoot )
+            return '<anon>';
+        else
+            return super.fullName;
+    }
+    
     get debugInfo () {
         return `${this.kernel.constructor.name} = ${this.kernel.debugValue}`;
     }

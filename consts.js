@@ -44,6 +44,8 @@ exports.bexist = Symbol('bexist'); // conproxy: ensure branch exists. add if nee
 exports.bexpand = Symbol('bexpand');
 exports.pbexist = Symbol('pbexist');
 exports.potnPathFromRoot = Symbol('potnPathFromRoot');
+exports.treeFillFunc = Symbol('treeFillFunc');
+exports.TBProxyHandler = Symbol('TBProxyHandler');
 
 // probably defunct
 exports.portalEndpoints = Symbol('portalEndpoints');

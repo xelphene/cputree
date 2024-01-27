@@ -24,7 +24,7 @@ R.addc('s', new TNode({ kernel: new GetSetKernel(
     (t,v) => { t.i = -v }
 )}));
 
-var anonNode = new ANode({
+var anonNode = new TNode({
     kernel: new GetKernel(
         [R], t => t.i * 10
     )
@@ -36,7 +36,7 @@ R.addc('a', new TNode({
     )
 }));
 
-var mapFuncNode = new ANode({
+var mapFuncNode = new TNode({
     kernel: new GetKernel(
         [R, R.getc('c')], (t,c) => v => t.j * v - c
     )
