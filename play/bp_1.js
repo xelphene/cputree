@@ -22,8 +22,8 @@ R.o.j = t => t.j;
 R.m = tinsert.map( R.o, (t,v) => v * t.md );
 
 R.pow = tinsert.input(3);
-//R.mp = tinsert.powMap( R.o, R.pow );
-R.mp = tinsert.powMap( R.o, t => t.pow );
+//R.mp = tinsert.powMap( R.o, R.pow ); // works
+R.mp = tinsert.powMap( R.m, t => t.pow ); // works
 //R.mp = tinsert.powMap( R.o, 3 ); // TODO
 
 R = unwrap(R);
@@ -37,8 +37,8 @@ R.logDebug();
 
 console.log('='.repeat(80));
 R.rawObject.pow = 2; R.computeIfNeeded();
-R.getc('o').logDebug();
-R.getc('mp').logDebug(); // TODO: ☉.mp.j gets one extra computation. why?
+R.getc('m').logDebug();
+R.getc('mp').logDebug();
 
 /*
 R.i = ct.tree.input(0.1); // tinsert func
