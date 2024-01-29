@@ -89,9 +89,22 @@ class BuildProxy
             return {
                 configurable: false,
                 enumerable: false,
-                value: makeHasOwnProperty(o)
+                value: this.get(o, key),
             }
         
+        if( o.hasObjWithKey(key) )
+            return {
+                configurable: false,
+                enumerable: true,
+                value: this.get(o, key),
+            }
+        
+        if( o.hasLeafWithKey(key) )
+            return {
+                configurable: false,
+                enumerable: true,
+                value: this.get(o, key)
+            }
         
         throw new Error(`${logPrefix}: unknown getOwnPropertyDescriptor op`);
     }
