@@ -5,23 +5,40 @@ const {tbuild, unwrap, tinsert, bexist} = require('../tbuild');
 
 var R = tbuild();
 
+// TODO: also make a simple input symbol
 R.i  = tinsert.input(0.222);
+R.j  = tinsert.input(6);
 R.c  = t => 222;
 R.md = t => 2;
 R.f1 = t => t.c + 1;
 R.f2 = t => t.i*10000;
+R.fj = t => t.j + 0.1;
 
 R.o = bexist;
 R.o.i = tinsert.input(9);
 R.o.f = t => t.i + t.o.i;
+R.o.j = t => t.j;
 
 R.m = tinsert.map( R.o, (t,v) => v * t.md );
 
+R.pow = tinsert.input(3);
+//R.mp = tinsert.powMap( R.o, R.pow );
+R.mp = tinsert.powMap( R.o, t => t.pow );
+//R.mp = tinsert.powMap( R.o, 3 ); // TODO
 
 R = unwrap(R);
 R.init({});
-
+console.log( R.rawObject );
+console.log('---');
+R.rawObject.j = 8;
+console.log( R.rawObject );
+console.log('---');
 R.logDebug();
+
+console.log('='.repeat(80));
+R.rawObject.pow = 2; R.computeIfNeeded();
+R.getc('o').logDebug();
+R.getc('mp').logDebug(); // TODO: ☉.mp.j gets one extra computation. why?
 
 /*
 R.i = ct.tree.input(0.1); // tinsert func

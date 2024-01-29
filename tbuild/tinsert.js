@@ -5,7 +5,6 @@ const {treeFillFunc} = require('../consts');
 const {unwrap, getTBProxyHandler} = require('./util');
 const {TNode} = require('../node/tnode');
 const {InputKernel} = require('../kernel');
-const {map} = require('./map');
 
 function input(defaultValue)
 {
@@ -19,7 +18,8 @@ function input(defaultValue)
 }
 exports.input = input;
 
-exports.map = map;
+exports.map = require('./map').map;
+exports.powMap = require('./map').powMap;
 
 /*
 function bind(bindings, getFunc, setFunc) {

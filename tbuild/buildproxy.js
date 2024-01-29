@@ -56,7 +56,10 @@ class BuildProxy
 
         if( o.hasObjWithKey(key) )
             return new Proxy( o.getc(key), this );
-            
+        
+        if( o.hasLeafWithKey(key) )
+            return o.getc(key);
+        
         // TODO
         // if( ! o.hasc(key) )
         //     return getPotentialNodeProxy(o, key);
@@ -110,7 +113,7 @@ class BuildProxy
         
         if( typeof(v)=='function' && v.hasOwnProperty(treeFillFunc) ) {
             log(`tree fill ${v.name}`);
-            v(o, key, this);
+            v(o, key, this.bindings);
             return true;
         }
         
