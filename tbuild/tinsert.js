@@ -19,7 +19,7 @@ function input(defaultValue)
 exports.input = input;
 
 exports.map = require('./map').map;
-exports.powMap = require('./map').powMap;
+exports.powMap = require('./map_pow').powMap;
 
 /*
 function bind(bindings, getFunc, setFunc) {

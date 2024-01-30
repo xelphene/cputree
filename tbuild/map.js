@@ -1,111 +1,91 @@
 
 'use strict';
 
-const {treeFillFunc} = require('../consts');
 const {unwrap, getTBProxyHandler} = require('./util');
 const {TNode} = require('../node/tnode');
+const {LeafNode} = require('../node/leaf');
 const {GetKernel, MapGetKernel, MapGetBoundKernel} = require('../kernel');
 const {
-    mioSrcBranch, mioMapIn, mioMapOut, mioInput,
+    treeFillFunc, mioSrcBranch, mioMapIn, mioMapOut, mioInput,
 } = require('../consts');
 const {toPath, Path} = require('../path');
 
-
-function fillAllLeaf(mapBranch, srcBranch, mapFunc, mapFuncBindings)
+class MapFuncBuilder
 {
-    for( let n of srcBranch.iterTree() )
-        if( n.isLeaf )
-        {
-            let newPath = toPath( n.nodesToAncestor(srcBranch).slice(0,-1).reverse().map( i => i.key ) );
-            /*
-            // prior
-            let tn = new TNode({ kernel:
-                new MapGetKernel( mapFuncNode, n )
-            });
-            mapBranch.addNodeAtPath( newPath, tn );
-            */
-            
-            let f = function () {
-                let v = [...arguments].slice(-1)
-                return mapFunc.apply(null, [...arguments].concat(v))
-            }
-            let tn = new TNode({ kernel:
-                new MapGetBoundKernel( mapFuncBindings, f, n )
-            });
-            mapBranch.addNodeAtPath( newPath, tn );
-        }
-}
+    constructor(src, mapFunc) {
+        src = unwrap(src);
+        this.src = src;
 
-// map *always* does a map-get only.
-// mapBi will do bi-map (wether with 1 func or 2)
-function map(src, mapFunc, opts)
-{
-    src = unwrap(src);
-    
-    if( opts===undefined )
-        opts = {};
-    if( opts.graft===undefined )
-        opts.graft = true;
-    function insertMap (dstParent, key, mapFuncBindings)
-    {
-        // TODO: handle it if src is a leaf node
+        // may be null, in which case child classes will
+        // override the mapFunc getter
+        this._mapFunc = mapFunc;
         
-        var dst = dstParent.addBranch(key);
-        
-        /*
-        // TODO
-        if( src.isRoot && opts.graft ) {
-            dst.add(mioSrcBranch, srcBranch);
-            dst.getc(mioSrcBranch).enumerable = false;
-        }
-        */
-        
-        /*
-        // prior
-        if( typeof(mapFunc)=='function' )
-            var mapFuncNode = new TNode({ kernel:
-                new GetKernel(
-                    mapFuncBindings,
-                    function () {
-                        return v => mapFunc.apply(null, [...arguments].concat(v) )
-                    }
-                )
-            });
-        else
-            throw new Error(`unknown mapFunc`);
-        //fillAllLeaf(dst, src, mapFuncNode);
-        */
-        
-        
-        fillAllLeaf(dst, src, mapFunc, mapFuncBindings);
+        this.dstParent = null;
+        this.dstKey = null;
+        this.buildProxyBindings = null;
+        this.dst = null;
     }
-    insertMap[treeFillFunc] = true;
-    return insertMap;
+    
+    fill(dstParent, dstKey, buildProxyBindings) {
+        this.dstParent = dstParent;
+        this.dstKey = dstKey;
+        this.buildProxyBindings = buildProxyBindings;
+        
+        if( this.src instanceof LeafNode ) 
+            this._fillLeaf();
+        else
+            this._fillBranch();
+    }
+
+    get mapFunc         () { return this._mapFunc }
+    get mapFuncBindings () { return this.buildProxyBindings }
+
+    _fillLeaf()
+    {
+        this.dstParent.addc(this.dstKey, new TNode({ kernel:
+            new MapGetBoundKernel(
+                this.mapFuncBindings,
+                this.mapFunc,
+                this.src
+            )
+        }));
+    }
+    
+    _fillBranch()
+    {
+        this.dst = this.dstParent.addBranch(this.dstKey);
+        if( this.src.isRoot ) {
+            // this automatically grafts the src tree onto
+            // dst[mioSrcBranch] if it is not a part of dst.  doesn't
+            // necessarily *have* to though
+            this.dst.addc(mioSrcBranch, this.src);
+            this.dst.getc(mioSrcBranch).enumerable = false;
+        }
+        
+        for( let n of this.src.iterTree() )
+            if( n.isLeaf )
+            {
+                let newPath = toPath(
+                    n.nodesToAncestor(this.src)
+                    .slice(0,-1)
+                    .reverse()
+                    .map( i => i.key ) 
+                );
+            
+                let tn = new TNode({ kernel:
+                    new MapGetBoundKernel(
+                        this.mapFuncBindings,
+                        this.mapFunc, 
+                        n
+                    )
+                });
+                this.dst.addNodeAtPath( newPath, tn );
+            }
+    }
+}
+exports.MapFuncBuilder = MapFuncBuilder;
+
+function map(src, mapFunc, opts) {
+    return new MapFuncBuilder(src, mapFunc, opts);
 }
 exports.map = map;
-
-function powMap(src, pow)
-{
-    pow = unwrap(pow);
-    if( pow instanceof TNode ) {
-        var mapFunc = (p,v) => v * 10**p;
-        var mapFuncBindings = [pow];
-    } else if( typeof(pow)=='function' ) {
-        var mapFunc = function () {
-            let v = [...arguments].slice(-1);
-            let p = pow.apply(null, [...arguments].slice(0,-1));
-            return v * 10**p;
-        }
-        var mapFuncBindings = nul;
-    } else
-        throw new Error('not implemented yet');
-    
-    function insertPowMap(dstParent, key, buildProxyBindings) {
-        if( mapFuncBindings===null )
-            mapFuncBindings = buildProxyBindings;
-        map(src, mapFunc)(dstParent, key, mapFuncBindings);
-    }
-    insertPowMap[treeFillFunc] = true;
-    return insertPowMap;
-}
-exports.powMap = powMap;

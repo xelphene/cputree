@@ -6,6 +6,7 @@ const {ObjNode} = require('../node/objnode');
 const {TNode} = require('../node/tnode');
 const {GetKernel} = require('../kernel');
 const tinsert = require('./tinsert');
+const {MapFuncBuilder} = require('./map');
 
 function makeHasOwnProperty(o) {
     return prop => (
@@ -127,6 +128,12 @@ class BuildProxy
         if( typeof(v)=='function' && v.hasOwnProperty(treeFillFunc) ) {
             log(`tree fill ${v.name}`);
             v(o, key, this.bindings);
+            return true;
+        }
+        
+        if( v instanceof MapFuncBuilder ) {
+            log(`tree fill Builder ${v.name}`);
+            v.fill(o, key, this.bindings);
             return true;
         }
         
