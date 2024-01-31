@@ -5,11 +5,12 @@ const {Kernel} = require('../kernel/kernel');
 const {LeafNode} = require('./leaf');
 
 class TNode extends LeafNode {
-    constructor({parent, kernel}) {
-        super({parent});
+    constructor(kernel) {
+        super({});
 
-        if( ! (kernel instanceof Kernel) ) 
+        if( !(kernel instanceof Kernel) ) 
             throw new TypeError(`Kernel instance required`);
+        
         this._kernel = kernel;
         this._kernel.attachNode(this);
     }
@@ -46,19 +47,21 @@ class TNode extends LeafNode {
         return rv;
     }
     
-    get kernel () {
-        return this._kernel;
-    }
-    /*
+    get kernel () { return this._kernel; }
     set kernel (k) {
+        if( this.isFinalized )
+            throw new Error(`Cannot set kernel after finalization`);
         if( ! (k instanceof Kernel) )
             throw new TypeError(`Kernel instance required`);
+        this._unlistenAll();
+        this._kernel.detachNode();
         this._kernel = k;
+        this._kernel.attachNode(this);
     }
-    get hasVNode () { return this._kernel!==undefined }
-    */
     
     finalizeDefinition () {
+        if( this._kernel === undefined )
+            throw new Error(`Cannot finalize a TNode which has no Kernel`);
         super.finalizeDefinition();
     }
     

@@ -10,7 +10,7 @@ function input(defaultValue)
 {
     function insertInput (dst, key, dstProxyHandler) {
         unwrap(dst).addc(key, 
-            new TNode({  kernel: new InputKernel(defaultValue)  })
+            new TNode( new InputKernel(defaultValue) )
         )
     }
     insertInput[treeFillFunc] = true;
@@ -20,11 +20,4 @@ exports.input = input;
 
 exports.map = require('./map').map;
 exports.powMap = require('./map_pow').powMap;
-
-/*
-function bind(bindings, getFunc, setFunc) {
-}
-bind[tinsert] = true;
-exports.bind = bind;
-*/
 

@@ -68,7 +68,6 @@ class MapGetKernel extends Kernel {
         }
     }
 
-    // TODO: mapFuncNode and srcNode should be persistently listened to.
     getValue () {
         if( this._fresh )
             return this._cachedValue;

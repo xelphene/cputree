@@ -16,6 +16,10 @@ class Kernel {
             throw new Error(`Already attached to a Node`);
         this._node = node;
     }
+    detachNode(node) {
+        this._node = null;
+    }
+    
     get node () {
         if( this._node===null )
             throw new Error('Not attached to a node');

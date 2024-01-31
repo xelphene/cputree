@@ -50,6 +50,10 @@ class LeafNode extends Node {
         otherNode.delChangeListener(this);
         this._listeningTo.delete(otherNode);
     }
+    _unlistenAll() {
+        for( let n of this._listeningTo )
+            n.delChangeListener(this);
+    }
 
     get hearingFrom    () { return [...this._listeningTo]; }
     get hearingFromStr () { return this.hearingFrom.map( n => n.debugName ).join(', ') }

@@ -42,13 +42,13 @@ class MapFuncBuilder
 
     _fillLeaf()
     {
-        this.dstParent.addc(this.dstKey, new TNode({ kernel:
+        this.dstParent.addc(this.dstKey, new TNode(
             new MapGetBoundKernel(
                 this.mapFuncBindings,
                 this.mapFunc,
                 this.src
             )
-        }));
+        ));
     }
     
     _fillBranch()
@@ -72,13 +72,13 @@ class MapFuncBuilder
                     .map( i => i.key ) 
                 );
             
-                let tn = new TNode({ kernel:
+                let tn = new TNode(
                     new MapGetBoundKernel(
                         this.mapFuncBindings,
                         this.mapFunc, 
                         n
                     )
-                });
+                );
                 this.dst.addNodeAtPath( newPath, tn );
             }
     }

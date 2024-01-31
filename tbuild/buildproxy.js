@@ -118,9 +118,7 @@ class BuildProxy
             if( o.hasGetSetWithKey(key) || o.hasInputWithKey(key) )
                 o.del(key);
             log(`new getter`);
-            let tnode = new TNode({ kernel:
-                new GetKernel(this._bindings, v)
-            });
+            let tnode = new TNode( new GetKernel(this._bindings, v) );
             o.addc(key, tnode);
             return true;
         }
