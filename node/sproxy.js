@@ -9,7 +9,6 @@ const {
 } = require('../consts');
 
 const Node = require('./node').Node;
-const ANode = require('./anode').ANode;
 const Kernel = require('../kernel/kernel').Kernel;
 
 class MapDef {
@@ -36,8 +35,8 @@ exports.getDTProxyHandler = function({overNode, rcvr, purpose})
                 dependencyFound: () => {}
             };
     } else {
-        if( ! (rcvr instanceof Node) && ! (rcvr instanceof ANode) && !(rcvr instanceof Kernel) )
-            throw new Error(`Node, ANode or Kernel instance required for rcvr, not ${rcvr}`);
+        if( ! (rcvr instanceof Node) && !(rcvr instanceof Kernel) )
+            throw new Error(`Node or Kernel instance required for rcvr, not ${rcvr}`);
     }
     
     if( DEBUG )

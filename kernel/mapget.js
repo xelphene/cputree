@@ -2,7 +2,6 @@
 'use strict';
 
 const {Kernel} = require('./kernel');
-const {ANode} = require('../node/anode');
 const {TNode} = require('../node/tnode');
 const {ObjNode} = require('../node/objnode');
 const {descFunc, anyToString} = require('../util');
@@ -10,10 +9,10 @@ const {descFunc, anyToString} = require('../util');
 class MapGetKernel extends Kernel {
     constructor(mapFuncNode, srcNode) {
         super();
-        if( !(mapFuncNode instanceof TNode) && !(mapFuncNode instanceof ANode) )
-            throw new Error(`TNode or ANode instance required for mapFuncNode`);
-        if( !(srcNode instanceof TNode) && !(srcNode instanceof ANode) )
-            throw new Error(`TNode or ANode instance required for srcNode`);
+        if( !(mapFuncNode instanceof TNode) )
+            throw new Error(`TNode instance required for mapFuncNode`);
+        if( !(srcNode instanceof TNode) )
+            throw new Error(`TNode instance required for srcNode`);
         this._mapFuncNode = mapFuncNode;
         this._srcNode = srcNode;
 

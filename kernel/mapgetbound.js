@@ -3,7 +3,6 @@
 
 const {Kernel} = require('./kernel');
 const {TNode} = require('../node/tnode');
-const {ANode} = require('../node/anode');
 const {ObjNode} = require('../node/objnode');
 const {descFunc, anyToString} = require('../util');
 
@@ -13,8 +12,7 @@ class MapGetBoundKernel extends Kernel {
         for( let i=0; i<bindings.length; i++ )
             if( 
                 ! (bindings[i] instanceof ObjNode) &&
-                ! (bindings[i] instanceof TNode) &&
-                ! (bindings[i] instanceof ANode)
+                ! (bindings[i] instanceof TNode)
             ) {
                 throw new Error(`TNode | ObjNode instance required for binding ${i}`);
             }
@@ -73,7 +71,7 @@ class MapGetBoundKernel extends Kernel {
     _getArgs() {
         var rv = [];
         for( let b of this._bindings ) {
-            if( b instanceof TNode || b instanceof ANode ) {
+            if( b instanceof TNode ) {
                 this.node._listenTo(b);
                 rv.push( b.value )
             } else if( b instanceof ObjNode ) {
