@@ -14,6 +14,7 @@ class GetKernel extends Kernel {
                 ! (bindings[i] instanceof ObjNode) &&
                 ! (bindings[i] instanceof TNode)
             ) {
+                console.log(bindings[i]);
                 throw new Error(`TNode | ObjNode instance required for binding ${i}`);
             }
         

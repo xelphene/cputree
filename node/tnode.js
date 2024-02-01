@@ -5,13 +5,13 @@ const {Kernel} = require('../kernel/kernel');
 const {LeafNode} = require('./leaf');
 
 class TNode extends LeafNode {
-    constructor(kernel) {
+    constructor(k) {
         super({});
 
-        if( !(kernel instanceof Kernel) ) 
+        if( !(k instanceof Kernel) ) 
             throw new TypeError(`Kernel instance required`);
         
-        this._kernel = kernel;
+        this._kernel = k;
         this._kernel.attachNode(this);
     }
     
@@ -81,3 +81,4 @@ class TNode extends LeafNode {
     getValue()      { return this.kernel.getValue() }
 }
 exports.TNode = TNode;
+

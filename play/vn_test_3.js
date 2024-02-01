@@ -4,12 +4,13 @@
 const {
     GetKernel, InputKernel, GetSetKernel, MapGetKernel, MapGetBoundKernel
 } = require('../kernel');
-
+const {makeNode} = require('../');
 const {ObjNode} = require('../node/objnode');
 const {TNode}   = require('../node/tnode');
 
 var R = new ObjNode({});
-R.addc('i', new TNode( new InputKernel(0.1)  ));
+//R.addc('i', new TNode( new InputKernel(0.1)  ));
+R.addc('i', makeNode('Input', 0.1) );
 R.addc('j', new TNode( new InputKernel(0.2)  ));
 R.addc('c', new TNode(
     new GetKernel(
