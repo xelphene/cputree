@@ -19,6 +19,9 @@ class GetKernel extends Kernel {
             }
         
         this._bindings = bindings;
+        
+        if( typeof(func)!='function' )
+            throw new TypeError(`func argument must be a function`);
         this._getFunc = func;
         
         this._fresh = false;

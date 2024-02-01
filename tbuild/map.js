@@ -4,7 +4,7 @@
 const {unwrap, getTBProxyHandler} = require('./util');
 const {TNode} = require('../node/tnode');
 const {LeafNode} = require('../node/leaf');
-const {GetKernel, MapGetKernel, MapGetBoundKernel} = require('../kernel');
+const {GetKernel, MapGetKernel, MapBoundKernel} = require('../kernel');
 const {
     treeFillFunc, mioSrcBranch, mioMapIn, mioMapOut, mioInput,
 } = require('../consts');
@@ -12,13 +12,14 @@ const {toPath, Path} = require('../path');
 
 class MapFuncBuilder
 {
-    constructor(src, mapFunc) {
+    constructor({src, mapGetFunc, mapSetFunc}) {
         src = unwrap(src);
         this.src = src;
 
         // may be null, in which case child classes will
         // override the mapFunc getter
-        this._mapFunc = mapFunc;
+        this._mapGetFunc = mapGetFunc;
+        this._mapSetFunc = mapSetFunc;
         
         this.dstParent = null;
         this.dstKey = null;
@@ -37,17 +38,19 @@ class MapFuncBuilder
             this._fillBranch();
     }
 
-    get mapFunc         () { return this._mapFunc }
+    get mapSetFunc      () { return this._mapSetFunc }
+    get mapGetFunc      () { return this._mapGetFunc }
     get mapFuncBindings () { return this.buildProxyBindings }
 
     _fillLeaf()
     {
         this.dstParent.addc(this.dstKey, new TNode(
-            new MapGetBoundKernel(
-                this.mapFuncBindings,
-                this.mapFunc,
-                this.src
-            )
+            new MapBoundKernel({
+                bindings: this.mapFuncBindings,
+                mapGetFunc: this.mapGetFunc,
+                mapSetFunc: this.mapSetFunc,
+                srcNode: this.src
+            })
         ));
     }
     
@@ -73,11 +76,12 @@ class MapFuncBuilder
                 );
             
                 let tn = new TNode(
-                    new MapGetBoundKernel(
-                        this.mapFuncBindings,
-                        this.mapFunc, 
-                        n
-                    )
+                    new MapBoundKernel({
+                        bindings: this.mapFuncBindings,
+                        mapGetFunc: this.mapGetFunc, 
+                        mapSetFunc: this.mapSetFunc,
+                        srcNode: n
+                    })
                 );
                 this.dst.addNodeAtPath( newPath, tn );
             }
@@ -85,7 +89,31 @@ class MapFuncBuilder
 }
 exports.MapFuncBuilder = MapFuncBuilder;
 
-function map(src, mapFunc, opts) {
-    return new MapFuncBuilder(src, mapFunc, opts);
+function map(src, mapFunc) {
+    return new MapFuncBuilder({
+        src,
+        mapGetFunc: mapFunc,
+        mapSetFunc: null
+    });
 }
 exports.map = map;
+
+function mapBi(src, mapFunc, mapSetFunc)
+{
+    if( typeof(mapFunc)=='function' && mapSetFunc===undefined )
+        return new MapFuncBuilder({
+            src,
+            mapGetFunc: mapFunc,
+            mapSetFunc: mapFunc
+        });
+    else if( typeof(mapFunc)=='function' && typeof(mapSetFunc)=='function' )
+        return new MapFuncBuilder({
+            src,
+            mapGetFunc: mapFunc,
+            mapSetFunc: mapSetFunc
+        });
+    else
+        throw new TypeError(`mapBi requires src Node and one or two functions as arguments`);
+        
+}
+exports.mapBi = mapBi;

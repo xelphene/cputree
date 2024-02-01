@@ -29,9 +29,14 @@ exports.anyToString = (x, maxLen) => {
 };
 
 exports.descFunc = (f, maxLen) => {
-    let js = JSON.stringify(f.toString()).slice(1,-1);
-    if( js.length > maxLen )
-        return js.slice(0,maxLen-3) + '...';
-    else
-        return js;
+    if( f===null )
+        return 'null';
+    else if( typeof(f)=='function' ) {
+        let js = JSON.stringify(f.toString()).slice(1,-1);
+        if( js.length > maxLen )
+            return js.slice(0,maxLen-3) + '...';
+        else
+            return js;
+    } else
+        throw new TypeError(`function or null required for argument 0`);
 };

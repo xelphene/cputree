@@ -2,7 +2,7 @@
 'use strict';
 
 const {
-    GetKernel, InputKernel, GetSetKernel, MapGetKernel, MapGetBoundKernel
+    GetKernel, InputKernel, GetSetKernel, MapGetKernel, MapBoundKernel
 } = require('../kernel');
 const {makeNode} = require('../');
 const {ObjNode} = require('../node/objnode');
@@ -47,10 +47,12 @@ R.addc('m', new TNode(
 ));
 
 R.addc('mb', new TNode(
-    new MapGetBoundKernel(
-        [R, R.getc('c')], (t,c,v) => t.j * v - c,
-        R.getc('a')
-    )
+    new MapBoundKernel({
+        bindings: [R, R.getc('c')],
+        mapGetFunc: (t,c,v) => t.j * v - c,
+        mapSetFunc: null,
+        srcNode: R.getc('a')
+    })
 ));
    
 

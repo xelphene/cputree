@@ -6,8 +6,8 @@ const {TNode} = require('../node/tnode');
 const {ObjNode} = require('../node/objnode');
 const {descFunc, anyToString} = require('../util');
 
-class MapGetBoundKernel extends Kernel {
-    constructor(bindings, mapFunc, srcNode) {
+class MapBoundKernel extends Kernel {
+    constructor({bindings, mapGetFunc, mapSetFunc, srcNode}) {
         super();
         for( let i=0; i<bindings.length; i++ )
             if( 
@@ -18,7 +18,16 @@ class MapGetBoundKernel extends Kernel {
             }
 
         this._bindings = bindings;
-        this._mapFunc = mapFunc;
+        
+        if( mapSetFunc===null || typeof(mapSetFunc)=='function' )
+            this._mapSetFunc = mapSetFunc;
+        else
+            throw new TypeError(`mapSetFunc argument must be null or a function`);
+        
+        if( typeof(mapGetFunc) != 'function' )
+            throw new TypeError(`mapGetFunc argument must be a function`);
+        this._mapGetFunc = mapGetFunc;
+        
         this._srcNode = srcNode;
 
         this._fresh = false;
@@ -31,7 +40,7 @@ class MapGetBoundKernel extends Kernel {
         this.node._listenTo( this._srcNode );
     }
 
-    get settable () { return false }
+    get settable () { return this._mapSetFunc!==null && this._srcNode.settable }
     get fresh    () { return this._fresh }
 
     get debugValue () { return this._cachedValue }
@@ -42,7 +51,9 @@ class MapGetBoundKernel extends Kernel {
     
     get debugLines () {
         let rv = [];
-        rv.push(`mapFunc: ${descFunc(this._mapFunc, 30)}`);
+        rv.push(`settable: ${this.settable}`);
+        rv.push(`mapGetFunc: ${descFunc(this._mapGetFunc, 30)}`);
+        rv.push(`mapSetFunc: ${descFunc(this._mapSetFunc, 30)}`);
         rv.push(`srcNode: ${this._srcNode.fullName}`);
         rv.push(`computeCount: ${this.computeCount}`);
         return rv;
@@ -68,6 +79,35 @@ class MapGetBoundKernel extends Kernel {
         }
     }
     
+    _setArgs (assignedValue) {
+        var rv = [];
+        for( let b of this._bindings ) {
+            if( b instanceof TNode ) {
+                this.node._listenTo(b);
+                rv.push( b.value );
+            } else if( b instanceof ObjNode ) {
+                // this Proxy will call this.dependencyFound
+                // OPT: cache the proxy returned here.
+                rv.push( b.getDTProxyOverMe({
+                    overNode: b,
+                    purpose: 'setter'
+                }));
+            } else {
+                throw new Error(`unknown binding: ${b}`);
+            }
+        }
+        rv.push(assignedValue);
+        return rv;
+    }
+    
+    setValue(assignedValue) {
+        if( ! this.settable )
+            throw new Error(`this.node.debugName is not settable`);
+        let args = this._setArgs(assignedValue);
+        let nv = this._mapSetFunc.apply(null, args);
+        this._srcNode.setValue(nv);
+    }
+    
     _getArgs() {
         var rv = [];
         for( let b of this._bindings ) {
@@ -86,6 +126,7 @@ class MapGetBoundKernel extends Kernel {
                 throw new Error(`unknown binding: ${b}`);
             }
         }
+        rv.push(this.srcValue);
         return rv;
     }
     
@@ -94,10 +135,10 @@ class MapGetBoundKernel extends Kernel {
             return this._cachedValue;
         else {
             // TODO: exc handling
-            let args = this._getArgs().concat([this.srcValue]);
+            let args = this._getArgs();
             //console.log(`CALL ${this.debugName}`);
             //console.log(args);
-            let v = this._mapFunc.apply(null, args);
+            let v = this._mapGetFunc.apply(null, args);
             //console.log(v);
             //console.log(`^ end call`);
             this._cachedValue = v;
@@ -113,4 +154,4 @@ class MapGetBoundKernel extends Kernel {
     }
 
 }
-exports.MapGetBoundKernel = MapGetBoundKernel;
+exports.MapBoundKernel = MapBoundKernel;

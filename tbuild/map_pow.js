@@ -8,7 +8,7 @@ const {unwrap} = require('./util');
 class PowMapBuilder extends MapFuncBuilder
 {
     constructor(src, pow) {
-        super(src, null);
+        super({src, mapGetFunc:null, mapSetFunc:null });
         this.pow = unwrap(pow);
     }
     
@@ -16,16 +16,23 @@ class PowMapBuilder extends MapFuncBuilder
     {
         if( this.pow instanceof TNode ) {
             return [
-                [this.pow], (p,v) => v * 10**p
+                [this.pow],
+                (p,v) => v * 10**p,
+                (p,v) => v / 10**p
             ];
         } else if( typeof(this.pow)=='function' ) {
             let pow = this.pow;
-            let mapFunc = function () {
+            let mapGetFunc = function () {
                 let v = [...arguments].slice(-1);
                 let p = pow.apply(null, [...arguments].slice(0,-1));
                 return v * 10**p;
             }
-            return [this.buildProxyBindings, mapFunc];
+            let mapSetFunc = function () {
+                let v = [...arguments].slice(-1);
+                let p = pow.apply(null, [...arguments].slice(0,-1));
+                return v / 10**p;
+            }
+            return [this.buildProxyBindings, mapGetFunc, mapSetFunc];
         } else {
             console.log(this.pow);
             throw new Error('unknown value for pow');
@@ -33,7 +40,8 @@ class PowMapBuilder extends MapFuncBuilder
     }
     
     get mapFuncBindings () { return this.mapFuncAndBindings[0] }
-    get mapFunc         () { return this.mapFuncAndBindings[1] }
+    get mapGetFunc      () { return this.mapFuncAndBindings[1] }
+    get mapSetFunc      () { return this.mapFuncAndBindings[2] }
     
 }
 exports.PowMapBuilder = PowMapBuilder;
