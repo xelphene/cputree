@@ -785,6 +785,9 @@ class ObjNode extends Node {
                     this._inputs[k].setValue( input[k] );
                 delete unused[k];
             }
+            if( this.hasc(k) && (this.getc(k) instanceof TNode) && this.getc(k).settable ) {
+                this.getc(k).setValue( input[k] );
+            }
             if( typeof(input[k])=='object' && this.hasObjWithKey(k) ) {
                 let u = this.getProp(k).applyInput(input[k], init);
                 if( allOwnKeys(u).length > 0 )

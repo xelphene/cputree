@@ -42,9 +42,7 @@ class Kernel {
 
     //////////////////////////////////////////////////////////
     
-    get value () {}
-    set value (v) {}
-    get settable () {}
+    get settable () { throw new Error('TODO') }
 
     computeIfNeeded () {}
 }

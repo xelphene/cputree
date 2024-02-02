@@ -9,8 +9,8 @@ const {descFunc, anyToString} = require('../util');
 
 class GetSetKernel extends GetKernel
 {
-    constructor(bindings, getFunc, setFunc) {
-        super(bindings, getFunc);
+    constructor({bindings, getFunc, setFunc}) {
+        super({bindings, getFunc});
         this._setFunc = setFunc;
     }
     

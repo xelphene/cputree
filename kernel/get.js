@@ -7,7 +7,7 @@ const {ObjNode} = require('../node/objnode');
 const {descFunc, anyToString} = require('../util');
 
 class GetKernel extends Kernel {
-    constructor(bindings, func) {
+    constructor({bindings, getFunc}) {
         super();
         for( let i=0; i<bindings.length; i++ )
             if( 
@@ -20,9 +20,9 @@ class GetKernel extends Kernel {
         
         this._bindings = bindings;
         
-        if( typeof(func)!='function' )
+        if( typeof(getFunc)!='function' )
             throw new TypeError(`func argument must be a function`);
-        this._getFunc = func;
+        this._getFunc = getFunc;
         
         this._fresh = false;
         this._cachedValue = undefined;

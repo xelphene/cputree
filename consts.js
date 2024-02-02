@@ -1,7 +1,7 @@
 
 'use strict';
 
-exports.DEBUG = true;
+exports.DEBUG = false;
 
 exports.CTL = Symbol('CTL');
 exports.enumerable = Symbol('enumerable');
