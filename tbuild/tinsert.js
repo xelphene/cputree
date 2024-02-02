@@ -10,7 +10,9 @@ function input(defaultValue)
 {
     function insertInput (dst, key, dstProxyHandler) {
         unwrap(dst).addc(key, 
-            new TNode( new InputKernel(defaultValue) )
+            new TNode( new InputKernel({
+                defaultValue
+            }))
         )
     }
     insertInput[treeFillFunc] = true;

@@ -4,7 +4,7 @@
 const {unwrap, getTBProxyHandler} = require('./util');
 const {TNode} = require('../node/tnode');
 const {LeafNode} = require('../node/leaf');
-const {GetKernel, MapGetKernel, MapBoundKernel} = require('../kernel');
+const {MapBoundKernel} = require('../kernel');
 const {
     treeFillFunc, mioSrcBranch, mioMapIn, mioMapOut, mioInput,
 } = require('../consts');
