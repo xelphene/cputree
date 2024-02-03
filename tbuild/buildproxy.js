@@ -1,6 +1,7 @@
 
 'use strict';
 
+const {DEBUG} = require('../consts');
 const {N, treeFillFunc, TBProxyHandler, bexist} = require('../consts');
 const {ObjNode} = require('../node/objnode');
 const {TNode} = require('../node/tnode');
@@ -20,9 +21,15 @@ class BuildProxy
 {
     constructor( bindings ) {
         this._bindings = bindings;
+        this.logPrefix = `BP`;
     }
     
     get bindings () { return this._bindings }
+
+    log(msg) {
+        if( DEBUG )
+            console.log(`${this.logPrefix}: ${msg}`);
+    }
     
     has(o, key) {
         if( key===N )
@@ -43,8 +50,7 @@ class BuildProxy
     defineProperty (o, key, descriptor) { throw new Error('invalid proxy operation') }
     
     get (o, key) {
-        const logPrefix = `BP ${o.fullName} GET ${key.toString()}`;
-        const log = msg => console.log(`${logPrefix}: ${msg}`);
+        this.logPrefix = `BP ${o.fullName} GET ${key.toString()}`;
         
         if( key===N )
             return o;
@@ -65,12 +71,13 @@ class BuildProxy
         // if( ! o.hasc(key) )
         //     return getPotentialNodeProxy(o, key);
         
-        throw new Error(`${logPrefix}: unknown get op`);        
+        throw new Error(`${this.logPrefix}: unknown get op`);        
     }
     
     getOwnPropertyDescriptor (o, key) {
-        const logPrefix = `BP ${o.fullName} GETOPD ${key.toString()}`;
-        const log = msg => console.log(`${logPrefix}: ${msg}`);
+        this.logPrefix = `BP ${o.fullName} GETOPD ${key.toString()}`;
+        
+        this.log(`hello?`);
         
         if( key===N )
             return {
@@ -107,17 +114,16 @@ class BuildProxy
                 value: this.get(o, key)
             }
         
-        throw new Error(`${logPrefix}: unknown getOwnPropertyDescriptor op`);
+        throw new Error(`${this.logPrefix}: unknown getOwnPropertyDescriptor op`);
     }
     
     set (o, key, v) {
-        const logPrefix = `BP ${o.fullName} SET ${key.toString()}`;
-        const log = msg => console.log(`${logPrefix}: ${msg}`);
+        this.logPrefix = `BP ${o.fullName} SET ${key.toString()}`;
         
         if( typeof(v)=='function' && !v.hasOwnProperty(treeFillFunc) ) {
             if( o.hasGetSetWithKey(key) || o.hasInputWithKey(key) )
                 o.del(key);
-            log(`new getter`);
+            this.log(`new getter`);
             let tnode = new TNode( new GetKernel({
                 bindings: this._bindings,
                 getFunc: v
@@ -127,13 +133,13 @@ class BuildProxy
         }
         
         if( typeof(v)=='function' && v.hasOwnProperty(treeFillFunc) ) {
-            log(`tree fill ${v.name}`);
+            this.log(`tree fill ${v.name}`);
             v(o, key, this.bindings);
             return true;
         }
         
         if( v instanceof MapFuncBuilder ) {
-            log(`tree fill Builder ${v.name}`);
+            this.log(`tree fill Builder ${v.name}`);
             v.fill(o, key, this.bindings);
             return true;
         }
@@ -150,7 +156,7 @@ class BuildProxy
             }
         }
         
-        throw new Error(`${logPrefix}: unknown set op`);
+        throw new Error(`${this.logPrefix}: unknown set op`);
     }
     
 }
