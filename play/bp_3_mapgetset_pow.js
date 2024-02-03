@@ -13,12 +13,13 @@ R.o.f = t => 4;
 R.pow = tinsert.input(3);
 
 //R.mp = tinsert.powMap( R.o, R.pow ); // works
-R.mp = tinsert.powMap( R.o, t => t.pow ); // works
+//R.mp = tinsert.powMap( R.o, t => t.pow ); // works
 //R.mp = tinsert.powMap( R.o, 3 ); // TODO
 
 //R.ml  = tinsert.map( R.i, (t,v) => -v );
 
-//R.mlp = tinsert.powMap( R.i,  t => t.pow ); // works
+R.mp = bexist;
+R.mp.i = tinsert.powMap( R.o.i,  t => t.pow ); // works
 //R.mlp = tinsert.powMap( R.i,  R.pow ); // works
 
 
