@@ -2,6 +2,7 @@
 'use strict';
 
 const {Kernel} = require('./kernel');
+const {LeafNode} = require('../node/leaf');
 const {TNode} = require('../node/tnode');
 const {ObjNode} = require('../node/objnode');
 const {descFunc, anyToString} = require('../util');
@@ -28,6 +29,10 @@ class MapBoundKernel extends Kernel {
             throw new TypeError(`mapGetFunc argument must be a function`);
         this._mapGetFunc = mapGetFunc;
         
+        if( ! (srcNode instanceof LeafNode) ) {
+            console.log(srcNode);
+            throw new Error(`LeafNode instance required for srcNode argument`);
+        }
         this._srcNode = srcNode;
 
         this._fresh = false;
