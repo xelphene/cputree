@@ -76,6 +76,11 @@ class TNode extends LeafNode {
         });
     }
     
+    canRelayInput() {
+        const {InputKernel} = require('../kernel');
+        return this.kernel instanceof InputKernel;
+    }
+    
     finalizeDefinition () {
         if( this._kernel === undefined )
             throw new Error(`Cannot finalize a TNode which has no Kernel`);

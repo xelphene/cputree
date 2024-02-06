@@ -3,9 +3,14 @@
 
 const {N, TBProxyHandler} = require('../consts');
 const {TNode} = require('../node/tnode');
+const {RelayInputKernel} = require('../kernel/relayinput');
 const {GetKernel} = require('../kernel/get');
 const {tbuild, unwrap, tinsert, bexist} = require('../tbuild');
 const {BuildProxy} = require('./buildproxy');
+
+beforeEach(() => {
+    global.console = require('console');
+});
 
 test('get', () =>
 {
@@ -86,4 +91,40 @@ test('branch', () =>
     expect( R.nav('s2.i').kernel.fresh ).toBe( true );
     expect( R.nav('s2.i').kernel.computeCount ).toBe( 3 );
     
+});
+
+test('input_relay', () =>
+{
+    var R = tbuild();
+    
+    R.i1 = tinsert.input(1);
+    R.i2 = tinsert.input(2);
+    R.i3 = tinsert.input(3);
+    R.c = t => 100;
+    R.c = t => 101; // overwrite
+    
+    R.src_get = t => t.src_input+1;
+    R.src_input = tinsert.input(20);
+    
+    R.i1 = R.src_get;
+    R.i2 = R.src_input;
+    R.i3 = t => t.src_input+2;
+    
+    R = unwrap(R);
+    R.init({});
+    
+    expect( R.nav('i1').getValue() ).toBe( 21 );
+    expect( R.nav('i2').getValue() ).toBe( 20 );
+    expect( R.nav('i3').getValue() ).toBe( 22 );
+    expect( R.nav('i1').kernel ).toBeInstanceOf( RelayInputKernel );
+    expect( R.nav('i2').kernel ).toBeInstanceOf( RelayInputKernel );
+    expect( R.nav('i3').kernel ).toBeInstanceOf( RelayInputKernel );
+    expect( R.nav('c').kernel  ).toBeInstanceOf( GetKernel );
+    
+    R.nav('src_input').setValue(30);
+
+    expect( R.nav('i1').getValue() ).toBe( 31 );
+    expect( R.nav('i2').getValue() ).toBe( 30 );
+    expect( R.nav('i3').getValue() ).toBe( 32 );
+    expect( R.nav('c').getValue()  ).toBe( 101 );
 });

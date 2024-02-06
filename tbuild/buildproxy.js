@@ -5,6 +5,7 @@ const {DEBUG} = require('../consts');
 const {N, treeFillFunc, TBProxyHandler, bexist, isDTProxy} = require('../consts');
 const {ObjNode} = require('../node/objnode');
 const {TNode} = require('../node/tnode');
+const {LeafNode} = require('../node/leaf');
 const {GetKernel} = require('../kernel');
 const tinsert = require('./tinsert');
 const {MapFuncBuilder} = require('./map');
@@ -124,9 +125,27 @@ class BuildProxy
         this.logPrefix = `BP ${o.fullName} SET ${key.toString()}`;
         
         // TODO: is treeFillFunc obsolete? I think so.
+
+        if( o.hasc(key) && o.getc(key).settable ) {
+            if( ! o.getc(key).canRelayInput )
+                throw new Error(`(settable) = (leaf): LHS cannot relay input`);
+            if( v instanceof LeafNode ) {
+                o.getc(key).relayInput( v );
+                return true;
+            }
+            if( typeof(v)=='function' ) {
+                let an = new TNode( new GetKernel({
+                    bindings: this.bindings,
+                    getFunc: v
+                }));
+                o.getc(key).relayInput(an);
+                return true;
+            }
+            throw new Error(`Assignment to settable: RHS is unknown.`);
+        }
         
         if( typeof(v)=='function' && !v.hasOwnProperty(treeFillFunc) ) {
-            if( o.hasGetSetWithKey(key) || o.hasInputWithKey(key) )
+            if( o.hasc(key) && o.getc(key).kernel instanceof GetKernel )
                 o.del(key);
             this.log(`new getter`);
             let tnode = new TNode( new GetKernel({
