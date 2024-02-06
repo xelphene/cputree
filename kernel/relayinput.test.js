@@ -8,7 +8,7 @@ const {GetKernel} = require('./get');
 const {RelayInputKernel} = require('./relayinput');
 const {LeafNode} = require('../node/leaf');
 const validate = require('../validate');
-/*
+
 test('relay_input', () =>
 {
     var R = new ObjNode({});
@@ -38,7 +38,6 @@ test('relay_input', () =>
 
     expect( () => R.computeIfNeeded() ).toThrow('Input validation failure setting ☉.r to a');
 });
-*/
 
 test('relay_compute', () =>
 {
@@ -68,4 +67,29 @@ test('relay_compute', () =>
     
     expect( () => R.computeIfNeeded() ).toThrow('Input validation failure setting ☉.r to NOPE');
     
+});
+
+test('relay_node', () =>
+{
+    var R = new ObjNode({});
+    R.addc('i', new TNode( new InputKernel({
+        defaultValue: 2,
+        validate: validate.number,
+    })));
+    R.addc('j', new TNode( new InputKernel({
+        defaultValue: 222
+    })));
+    
+    R.getc('i').relayInput( R.getc('j') );
+    
+    R.init({});
+    
+    expect( R.getc('i').getValue() ).toBe( 222 );
+    
+    R.getc('j').setValue('x');
+    expect( R.getc('i').kernel.fresh ).toBe(false);
+    expect( () => R.getc('i').getValue() ).toThrow( 'Input validation failure setting ☉.i to x:' );
+    
+    R.getc('j').setValue(3);
+    expect( R.getc('i').getValue() ).toBe( 3 );
 });

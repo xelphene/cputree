@@ -24,6 +24,8 @@ class InputKernel extends Kernel {
     
     get settable () { return true }
 
+    get validate () { return this._validate }
+
     get fresh () { return true }
     
     getValue () {

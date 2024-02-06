@@ -58,6 +58,23 @@ class TNode extends LeafNode {
         this._kernel = k;
         this._kernel.attachNode(this);
     }
+
+    relayInput(srcNode) {
+        if( this.isFinalized )
+            throw new Error(`Cannot relay input after finalization`);
+        if( ! (srcNode instanceof LeafNode) )
+            throw new TypeError(`LeafNode required for srcNode`);
+        
+        const {InputKernel, RelayInputKernel} = require('../kernel');
+        
+        if( ! (this.kernel instanceof InputKernel) )
+            throw new Error(`Cannot relay as my kernel is not an InputKernel`);
+
+        this.kernel = new RelayInputKernel({
+            validate: this.kernel.validate,
+            srcNode
+        });
+    }
     
     finalizeDefinition () {
         if( this._kernel === undefined )
