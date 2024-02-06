@@ -29,10 +29,8 @@ class MapBoundKernel extends Kernel {
             throw new TypeError(`mapGetFunc argument must be a function`);
         this._mapGetFunc = mapGetFunc;
         
-        if( ! (srcNode instanceof LeafNode) ) {
-            console.log(srcNode);
+        if( ! (srcNode instanceof LeafNode) )
             throw new Error(`LeafNode instance required for srcNode argument`);
-        }
         this._srcNode = srcNode;
 
         this._fresh = false;
