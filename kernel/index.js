@@ -7,3 +7,4 @@ exports.InputKernel = require('./input').InputKernel;
 exports.GetSetKernel = require('./getset').GetSetKernel;
 exports.MapGetKernel = require('./mapget').MapGetKernel;
 exports.MapBoundKernel = require('./mapbound').MapBoundKernel;
+exports.RelayInputKernel = require('./relayinput').RelayInputKernel;

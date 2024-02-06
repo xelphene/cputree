@@ -26,7 +26,7 @@ beforeEach( () => {
     })));
 });
 
-/*
+
 test('relay_input', () =>
 {
     R.addc('r', new TNode( new RelayGetSetKernel({
@@ -46,7 +46,7 @@ test('relay_input', () =>
 
     //console.log( R.rawObject );
 });
-*/
+
 
 test('relay_compute', () =>
 {
