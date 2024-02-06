@@ -2,12 +2,14 @@
 'use strict';
 
 const {DEBUG} = require('../consts');
-const {N, treeFillFunc, TBProxyHandler, bexist} = require('../consts');
+const {N, treeFillFunc, TBProxyHandler, bexist, isDTProxy} = require('../consts');
 const {ObjNode} = require('../node/objnode');
 const {TNode} = require('../node/tnode');
 const {GetKernel} = require('../kernel');
 const tinsert = require('./tinsert');
 const {MapFuncBuilder} = require('./map');
+const {unwrap} = require('./util');
+const {mapBi} = require('./map');
 
 function makeHasOwnProperty(o) {
     return prop => (
@@ -60,7 +62,7 @@ class BuildProxy
         
         if( key=='hasOwnProperty')
             return makeHasOwnProperty(o);
-
+        
         if( o.hasObjWithKey(key) )
             return new Proxy( o.getc(key), this );
         
@@ -77,39 +79,40 @@ class BuildProxy
     getOwnPropertyDescriptor (o, key) {
         this.logPrefix = `BP ${o.fullName} GETOPD ${key.toString()}`;
         
-        this.log(`hello?`);
-        
+        // if the property 'key' is non-existent or configurable on the
+        // underlying object 'o', it must be configurable here.
+
         if( key===N )
             return {
-                configurable: false,
+                configurable: true,
                 enumerable: false,
                 value: o
             }
         
         if( key===TBProxyHandler )
             return {
-                configurable: false,
+                configurable: true,
                 enumerable: false,
                 value: this
             }
         
         if( key=='hasOwnProperty' )
             return {
-                configurable: false,
+                configurable: true,
                 enumerable: false,
                 value: this.get(o, key),
             }
         
         if( o.hasObjWithKey(key) )
             return {
-                configurable: false,
+                configurable: true,
                 enumerable: true,
                 value: this.get(o, key),
             }
         
         if( o.hasLeafWithKey(key) )
             return {
-                configurable: false,
+                configurable: true,
                 enumerable: true,
                 value: this.get(o, key)
             }
@@ -119,6 +122,8 @@ class BuildProxy
     
     set (o, key, v) {
         this.logPrefix = `BP ${o.fullName} SET ${key.toString()}`;
+        
+        // TODO: is treeFillFunc obsolete? I think so.
         
         if( typeof(v)=='function' && !v.hasOwnProperty(treeFillFunc) ) {
             if( o.hasGetSetWithKey(key) || o.hasInputWithKey(key) )
@@ -141,6 +146,20 @@ class BuildProxy
         if( v instanceof MapFuncBuilder ) {
             this.log(`tree fill Builder ${v.name}`);
             v.fill(o, key, this.bindings);
+            return true;
+        }
+        
+        if( v instanceof ObjNode ) {
+            v = unwrap(v);
+            
+            if( o.root.treeHasNode(v) ) {
+                this.log(`map branch from within tree`);
+                mapBi(v, x => x).fill(o, key, []);
+            } else {
+                this.log(`graft separate tree`);
+                o.add(key, v);
+            }
+            
             return true;
         }
         
