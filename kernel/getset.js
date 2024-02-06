@@ -2,6 +2,7 @@
 'use strict';
 
 const {Kernel} = require('./kernel');
+const {LeafNode} = require('../node/leaf');
 const {TNode} = require('../node/tnode');
 const {ObjNode} = require('../node/objnode');
 const {GetKernel} = require('./get');
@@ -13,6 +14,8 @@ class GetSetKernel extends GetKernel
         super({bindings, getFunc});
         this._setFunc = setFunc;
     }
+
+    get setFunc () { return this._setFunc }
     
     get settable () { return true }
 

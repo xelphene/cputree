@@ -42,6 +42,11 @@ class MapBoundKernel extends Kernel {
         super.attachNode(node)
         this.node._listenTo( this._srcNode );
     }
+    
+    detachNode(node) {
+        this.node._unlistenTo( this._srcNode );
+        super.detachNode(node);
+    }
 
     get settable () { return this._mapSetFunc!==null && this._srcNode.settable }
     get fresh    () { return this._fresh }
@@ -147,6 +152,7 @@ class MapBoundKernel extends Kernel {
             this._cachedValue = v;
             this._fresh = true;
             this._computeCount++;
+            this.node.fireNodeValueChanged();
             return v;
         }
     }

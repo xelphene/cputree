@@ -28,7 +28,9 @@ class GetKernel extends Kernel {
         this._cachedValue = undefined;
         this._computeCount = 0;
     }
-
+    
+    get bindings () { return this._bindings }
+    get getFunc  () { return this._getFunc }
     get settable () { return false }
     get fresh    () { return this._fresh }
 
@@ -103,6 +105,7 @@ class GetKernel extends Kernel {
             this._cachedValue = v;
             this._fresh = true;
             this._computeCount++;
+            this.node.fireNodeValueChanged();
             return v;
         }
     }
