@@ -6,7 +6,7 @@ const {TNode} = require('../node/tnode');
 const {RelayInputKernel} = require('../kernel/relayinput');
 const {GetKernel} = require('../kernel/get');
 const {InputKernel} = require('../kernel/input');
-const {tbuild, unwrap, tinsert, bexist} = require('../tbuild');
+const {tbuild, unwrap, tinsert, bexist, tinput} = require('../tbuild');
 const {BuildProxy} = require('./buildproxy');
 
 beforeEach(() => {
@@ -253,3 +253,21 @@ test('potn_create_getset_no_get', () =>
         .toThrow("a TNode with a GetSetKernel was created at ☉.o.gs, but it's getFunc was not assigned");
 });
 
+test('tinput', () =>
+{
+    var R = tbuild();
+    
+    R.i = tinput.number(3);
+    R.j = tinput.any();
+    
+    R = unwrap(R);
+    R.init({});
+    
+    expect( R.getc('i').getValue() ).toBe(3);
+    R.getc('i').setValue(4);
+    expect( R.getc('i').getValue() ).toBe(4);
+    expect( () => R.getc('i').setValue('x') ).toThrow('Input validation failure setting ☉.i to x: number required; got string');
+    
+    R.getc('j').setValue('z');
+    expect( R.getc('j').getValue() ).toBe('z');
+});

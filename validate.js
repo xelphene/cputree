@@ -30,7 +30,26 @@ exports.string = (node, value) => {
     }
 };
 
+exports.stringOrUndef = (node, value) => {
+    if( value===undefined )
+        return [true,''];
+    if( typeof(value)=='string' ) {
+        return [true, ''];
+    } else {
+        return [false, `string required; got type ${typeof(value)}`];
+    }
+};
+
 exports.boolean = (node, value) => {
+    if( typeof(value)=='boolean' ) {
+        return [true, ''];
+    } else {
+        return [false, `boolean required; got type ${typeof(value)}`];
+    }
+};
+exports.booleanOrUndef = (node, value) => {
+    if( value===undefined )
+        return [true,''];
     if( typeof(value)=='boolean' ) {
         return [true, ''];
     } else {
