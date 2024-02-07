@@ -1,7 +1,7 @@
 
 'use strict';
 
-const {DEBUG} = require('../consts');
+const {DEBUG, potnPathFromRoot} = require('../consts');
 const {N, TBProxyHandler, bexist, isDTProxy} = require('../consts');
 const {ObjNode} = require('../node/objnode');
 const {TNode} = require('../node/tnode');
@@ -12,6 +12,7 @@ const {MapFuncBuilder} = require('./map');
 const {unwrap} = require('./util');
 const {mapBi} = require('./map');
 const {TreeFiller} = require('./fill');
+const { getPotentialNodeProxy, PotentialNode } = require('./potn');
 
 function makeHasOwnProperty(o) {
     return prop => (
@@ -71,11 +72,7 @@ class BuildProxy
         if( o.hasLeafWithKey(key) )
             return o.getc(key);
         
-        // TODO
-        // if( ! o.hasc(key) )
-        //     return getPotentialNodeProxy(o, key);
-        
-        throw new Error(`${this.logPrefix}: unknown get op`);        
+        return getPotentialNodeProxy(o, key, this);
     }
     
     getOwnPropertyDescriptor (o, key) {
@@ -126,22 +123,15 @@ class BuildProxy
         this.logPrefix = `BP ${o.fullName} SET ${key.toString()}`;
         
         // if LHS is a settable, treat specially. don't overwrite.
-        if( o.hasc(key) && o.getc(key).settable ) {
-            if( ! o.getc(key).canRelayInput )
-                throw new Error(`(settable) = (leaf): LHS cannot relay input`);
-            if( v instanceof LeafNode ) {
-                o.getc(key).relayInput( v );
-                return true;
-            }
-            if( typeof(v)=='function' ) {
-                let an = new TNode( new GetKernel({
-                    bindings: this.bindings,
-                    getFunc: v
-                }));
-                o.getc(key).relayInput(an);
-                return true;
-            }
-            throw new Error(`Assignment to settable: RHS is unknown.`);
+        if( o.hasc(key) && o.getc(key).settable )
+            return this.assignToSettable(o, key, v);
+        
+        if( v instanceof PotentialNode ) {
+            if( ! o.hasc(key) )
+                // neither LHS nor RHS exist. no-op.
+                return true
+            else
+                throw new Error(`Cannot assign [non-settable existing node] = [potential node]`);
         }
         
         if( typeof(v)=='function' ) {
@@ -164,14 +154,14 @@ class BuildProxy
             return true;
         }
         
-        if( v instanceof ObjNode ) {
+        if( v instanceof ObjNode || v instanceof LeafNode ) {
             if( o.hasc(key) )
                 o.del(key);
 
             v = unwrap(v);
             
             if( o.root.treeHasNode(v) ) {
-                this.log(`map branch from within tree`);
+                this.log(`map from within tree`);
                 mapBi(v, x => x).fill(o, key, []);
             } else {
                 this.log(`graft separate tree`);
@@ -194,6 +184,37 @@ class BuildProxy
         }
         
         throw new Error(`${this.logPrefix}: unknown set op`);
+    }
+    
+    assignToSettable(o, key, v)
+    {
+        if( ! o.getc(key).canRelayInput )
+            throw new Error(`[non-relay-capable settable] = [leaf]: LHS is settable but cannot relay`);
+        
+        if( v instanceof LeafNode ) {
+            o.getc(key).relayInput( v );
+            return true;
+        }
+        
+        if( typeof(v)=='function' ) {
+            let an = new TNode( new GetKernel({
+                bindings: this.bindings,
+                getFunc: v
+            }));
+            o.getc(key).relayInput(an);
+            return true;
+        }
+        
+        // LHS = settable. RHS = PotentialNode
+        // create a similar node (i.e. an Input) at RHS
+        // make LHS relay *from* it        
+        if( v instanceof PotentialNode ) {
+            let rhsNode = o.root.addp( v[potnPathFromRoot], o.getc(key).copyNode() );
+            o.getc(key).relayInput( rhsNode );
+            return true;
+        }
+        
+        throw new Error(`[settable] = [?]: RHS is unknown.`);
     }
     
 }

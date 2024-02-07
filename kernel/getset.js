@@ -12,10 +12,15 @@ class GetSetKernel extends GetKernel
 {
     constructor({bindings, getFunc, setFunc}) {
         super({bindings, getFunc});
-        this._setFunc = setFunc;
+        this.setFunc = setFunc;
     }
 
     get setFunc () { return this._setFunc }
+    set setFunc (setFunc) {
+        if( typeof(setFunc) != 'function' )
+            throw TypeError(`function required for setFunc`);
+        this._setFunc = setFunc;
+    }
     
     get settable () { return true }
 

@@ -20,9 +20,7 @@ class GetKernel extends Kernel {
         
         this._bindings = bindings;
         
-        if( typeof(getFunc)!='function' )
-            throw new TypeError(`func argument must be a function`);
-        this._getFunc = getFunc;
+        this.getFunc = getFunc;
         
         this._fresh = false;
         this._cachedValue = undefined;
@@ -30,7 +28,14 @@ class GetKernel extends Kernel {
     }
     
     get bindings () { return this._bindings }
+    
     get getFunc  () { return this._getFunc }
+    set getFunc  (getFunc) {
+        if( typeof(getFunc) != 'function' )
+            throw TypeError(`function required for getFunc`);
+        this._getFunc = getFunc;
+    }
+    
     get settable () { return false }
     get fresh    () { return this._fresh }
 
@@ -92,6 +97,7 @@ class GetKernel extends Kernel {
     }
 
     getValue () {
+        
         if( this._fresh )
             return this._cachedValue;
         else {

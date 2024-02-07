@@ -1,10 +1,11 @@
 
 'use strict';
 
-const {N, TBProxyHandler} = require('../consts');
+const {N, TBProxyHandler, nget, nset} = require('../consts');
 const {TNode} = require('../node/tnode');
 const {RelayInputKernel} = require('../kernel/relayinput');
 const {GetKernel} = require('../kernel/get');
+const {InputKernel} = require('../kernel/input');
 const {tbuild, unwrap, tinsert, bexist} = require('../tbuild');
 const {BuildProxy} = require('./buildproxy');
 
@@ -128,3 +129,127 @@ test('input_relay', () =>
     expect( R.nav('i3').getValue() ).toBe( 32 );
     expect( R.nav('c').getValue()  ).toBe( 101 );
 });
+
+test('leaf_alias', () =>
+{
+    var R = tbuild();
+    R.c = t => 222;
+    R.c2 = R.c;
+    
+    R = unwrap(R);
+    R.init({});
+    
+    expect( R.nav('c2').getValue() ).toBe( 222 );
+});
+
+test('potn', () =>
+{
+    var R = tbuild();
+    
+    R.x = t => 200;
+    R.o.c = t => t.x + 22;
+    R.o.p.c = t => t.x + 2;
+    
+    R = unwrap(R);
+    R.init({});
+    
+    expect( R.nav('o.c').getValue() ).toBe( 222 );
+    expect( R.nav('o.p.c').getValue() ).toBe( 202 );
+    
+    //R.logDebug();
+});
+
+test('potn_create_rhs', () =>
+{
+    var R = tbuild();
+    
+    R.i = tinsert.input(1);
+    R.i = R.o.i;
+    
+    R = unwrap(R);
+    R.init({
+        o: {
+            i: 2
+        }
+    });
+    
+    expect( R.nav('i').getValue() ).toBe( 2 );
+    expect( R.nav('o.i').getValue() ).toBe( 2 );
+    expect( R.nav('i').kernel ).toBeInstanceOf( RelayInputKernel );
+    expect( R.nav('o.i').kernel ).toBeInstanceOf( InputKernel );
+        
+    //R.logDebug();
+});
+
+
+test('potn_create_getset', () =>
+{
+    var R = tbuild();
+    R.i = tinsert.input( 20 );
+    
+    R.o.gs[nget] = t => t.i * 10;
+    R.o.gs[nset] = (t,v) => t.i = v / 10;
+    
+    R = unwrap(R);
+    R.init({});
+    
+    expect( R.nav('o.gs').getValue() ).toBe( 200 );
+    
+    R.nav('o.gs').setValue( 300 );
+
+    expect( R.nav('i').getValue()    ).toBe( 30 );
+    expect( R.nav('o.gs').getValue() ).toBe( 300 );
+    
+    //R.logDebug();
+});
+
+test('potn_create_getset_rev', () =>
+{
+    var R = tbuild();
+    R.i = tinsert.input( 20 );
+    
+    R.o.gs[nset] = (t,v) => t.i = v / 10;
+    R.o.gs[nget] = t => t.i * 10;
+    
+    R = unwrap(R);
+    R.init({});
+    
+    expect( R.nav('o.gs').getValue() ).toBe( 200 );
+    
+    R.nav('o.gs').setValue( 300 );
+
+    expect( R.nav('i').getValue()    ).toBe( 30 );
+    expect( R.nav('o.gs').getValue() ).toBe( 300 );
+    
+    //R.logDebug();
+});
+
+test('potn_create_getset_no_set', () =>
+{
+    var R = tbuild();
+    R.i = tinsert.input( 20 );
+    
+    //R.o.gs[nset] = (t,v) => t.i = v / 10;
+    R.o.gs[nget] = t => t.i * 10;
+    
+    R = unwrap(R);
+    R.init({});
+
+    expect( () => R.nav('o.gs').setValue( 300 ) )
+        .toThrow("a TNode with a GetSetKernel was created at ☉.o.gs, but it's setFunc was not assigned");
+});
+
+test('potn_create_getset_no_get', () =>
+{
+    var R = tbuild();
+    R.i = tinsert.input( 20 );
+    
+    R.o.gs[nset] = (t,v) => t.i = v / 10;
+    //R.o.gs[nget] = t => t.i * 10;
+    
+    R = unwrap(R);
+
+    expect( () => R.init({}) )
+        .toThrow("a TNode with a GetSetKernel was created at ☉.o.gs, but it's getFunc was not assigned");
+});
+

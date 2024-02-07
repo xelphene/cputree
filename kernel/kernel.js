@@ -26,8 +26,10 @@ class Kernel {
         return this._node;
     }
 
-    nodeValueChanged(node) { throw new Error('TODO'); }
-    nodeValueSpoiled(node) { throw new Error('TODO'); }
+    nodeValueChanged(node) { throw new Error('Not implemented'); }
+    nodeValueSpoiled(node) { throw new Error('Not implemented'); }
+
+    copyKernel() { throw new Error('Not implemented'); }
 
     //////////////////////////////////////////////////////////
 

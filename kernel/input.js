@@ -19,6 +19,13 @@ class InputKernel extends Kernel {
         return rv;
     }
 
+    copyKernel() {
+        return new this.constructor({
+            defaultValue: this._defaultValue,
+            validate: this._validate
+        });
+    }
+
     nodeValueChanged () { throw new Error('should never happen'); }
     nodeValueSpoiled () { throw new Error('should never happen'); }
     

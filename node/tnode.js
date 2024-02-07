@@ -1,6 +1,7 @@
 
 'use strict';
 
+const {nget, nset} = require('../consts');
 const {Kernel} = require('../kernel/kernel');
 const {LeafNode} = require('./leaf');
 
@@ -80,6 +81,10 @@ class TNode extends LeafNode {
         const {InputKernel} = require('../kernel');
         return this.kernel instanceof InputKernel;
     }
+
+    copyNode () {
+        return new this.constructor( this.kernel.copyKernel() );
+    }
     
     finalizeDefinition () {
         if( this._kernel === undefined )
@@ -101,6 +106,21 @@ class TNode extends LeafNode {
     setValue(v)     { this.kernel.setValue(v) }
     get value ()    { return this.getValue() }
     getValue()      { return this.kernel.getValue() }
+    
+    static get GetSetKernelClass () {
+        return require('../kernel/getset').GetSetKernel;
+    }
+    
+    set [nget] (f) {
+        if( ! (this._kernel instanceof require('../kernel/getset').GetSetKernel) )
+            throw new TypeError(`${this.debugName}: use of nget Symbol accessor requires a GetSetKernel`);
+        this._kernel.getFunc = f;
+    }
+    set [nset] (f) {
+        if( ! (this._kernel instanceof require('../kernel/getset').GetSetKernel) )
+            throw new TypeError(`${this.debugName}: use of nset Symbol accessor requires a GetSetKernel`);
+        this._kernel.setFunc = f;
+    }
 }
 exports.TNode = TNode;
 

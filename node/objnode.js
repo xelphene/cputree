@@ -88,6 +88,7 @@ class ObjNode extends Node {
     get MapNodeClass     () { return MapNode }
     //get PostValidateComputeClass () { return PostValidateComputeNode }
     get GetSetNodeClass  () { return GetSetNode }
+    get TNodeClass       () { return TNode }
 
     get debugValue () {
         return Object.fromEntries(
