@@ -1,22 +1,28 @@
 
 'use strict';
 
-const {treeFillFunc} = require('../consts');
 const {unwrap, getTBProxyHandler} = require('./util');
 const {TNode} = require('../node/tnode');
 const {InputKernel} = require('../kernel');
+const {TreeFiller} = require('./fill');
 
-function input(defaultValue)
-{
-    function insertInput (dst, key, dstProxyHandler) {
-        unwrap(dst).addc(key, 
-            new TNode( new InputKernel({
-                defaultValue
-            }))
-        )
+class InputFiller extends TreeFiller {
+    constructor(defaultValue) {
+        super();
+        this._defaultValue = defaultValue;
     }
-    insertInput[treeFillFunc] = true;
-    return insertInput;
+    
+    fill(dstParent, dstKey, buildProxyBindings) {
+        unwrap(dstParent).addc(dstKey,
+            new TNode( new InputKernel({
+                defaultValue: this._defaultValue
+            }))
+        );
+    }
+}
+
+function input(defaultValue) {
+    return new InputFiller(defaultValue);
 }
 exports.input = input;
 

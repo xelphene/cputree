@@ -6,13 +6,15 @@ const {TNode} = require('../node/tnode');
 const {LeafNode} = require('../node/leaf');
 const {MapBoundKernel} = require('../kernel');
 const {
-    treeFillFunc, mioSrcBranch, mioMapIn, mioMapOut, mioInput,
+    mioSrcBranch, mioMapIn, mioMapOut, mioInput,
 } = require('../consts');
 const {toPath, Path} = require('../path');
+const {TreeFiller} = require('./fill');
 
-class MapFuncBuilder
+class MapFuncBuilder extends TreeFiller
 {
     constructor({src, mapGetFunc, mapSetFunc}) {
+        super();
         src = unwrap(src);
         this.src = src;
 

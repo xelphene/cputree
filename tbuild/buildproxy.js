@@ -2,7 +2,7 @@
 'use strict';
 
 const {DEBUG} = require('../consts');
-const {N, treeFillFunc, TBProxyHandler, bexist, isDTProxy} = require('../consts');
+const {N, TBProxyHandler, bexist, isDTProxy} = require('../consts');
 const {ObjNode} = require('../node/objnode');
 const {TNode} = require('../node/tnode');
 const {LeafNode} = require('../node/leaf');
@@ -11,6 +11,7 @@ const tinsert = require('./tinsert');
 const {MapFuncBuilder} = require('./map');
 const {unwrap} = require('./util');
 const {mapBi} = require('./map');
+const {TreeFiller} = require('./fill');
 
 function makeHasOwnProperty(o) {
     return prop => (
@@ -124,8 +125,7 @@ class BuildProxy
     set (o, key, v) {
         this.logPrefix = `BP ${o.fullName} SET ${key.toString()}`;
         
-        // TODO: is treeFillFunc obsolete? I think so.
-
+        // if LHS is a settable, treat specially. don't overwrite.
         if( o.hasc(key) && o.getc(key).settable ) {
             if( ! o.getc(key).canRelayInput )
                 throw new Error(`(settable) = (leaf): LHS cannot relay input`);
@@ -144,8 +144,8 @@ class BuildProxy
             throw new Error(`Assignment to settable: RHS is unknown.`);
         }
         
-        if( typeof(v)=='function' && !v.hasOwnProperty(treeFillFunc) ) {
-            if( o.hasc(key) && o.getc(key).kernel instanceof GetKernel )
+        if( typeof(v)=='function' ) {
+            if( o.hasc(key) )
                 o.del(key);
             this.log(`new getter`);
             let tnode = new TNode( new GetKernel({
@@ -156,19 +156,18 @@ class BuildProxy
             return true;
         }
         
-        if( typeof(v)=='function' && v.hasOwnProperty(treeFillFunc) ) {
+        if( v instanceof TreeFiller ) {
+            if( o.hasc(key) )
+                o.del(key);
             this.log(`tree fill ${v.name}`);
-            v(o, key, this.bindings);
-            return true;
-        }
-        
-        if( v instanceof MapFuncBuilder ) {
-            this.log(`tree fill Builder ${v.name}`);
             v.fill(o, key, this.bindings);
             return true;
         }
         
         if( v instanceof ObjNode ) {
+            if( o.hasc(key) )
+                o.del(key);
+
             v = unwrap(v);
             
             if( o.root.treeHasNode(v) ) {
