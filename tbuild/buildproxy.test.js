@@ -5,6 +5,7 @@ const {N, TBProxyHandler, nget, nset} = require('../consts');
 const {TNode} = require('../node/tnode');
 const {RelayInputKernel} = require('../kernel/relayinput');
 const {GetKernel} = require('../kernel/get');
+const {MapBoundKernel} = require('../kernel');
 const {InputKernel} = require('../kernel/input');
 const {tbuild, unwrap, tinsert, bexist, tinput} = require('../tbuild');
 const {BuildProxy} = require('./buildproxy');
@@ -72,6 +73,11 @@ test('branch', () =>
     
     ////////////////////////////
     
+    expect( R.nav('s.i').kernel ).toBeInstanceOf( InputKernel );
+    expect( R.nav('s.c').kernel ).toBeInstanceOf( GetKernel );
+    expect( R.nav('s2.i').kernel ).toBeInstanceOf( MapBoundKernel );
+    expect( R.nav('s2.c').kernel ).toBeInstanceOf( MapBoundKernel );
+    
     expect( R.nav('s.i').getValue()  ).toBe( 222 );
     expect( R.nav('s.c').getValue()  ).toBe( 223 );
     expect( R.nav('s2.i').getValue() ).toBe( 222 );
@@ -91,7 +97,30 @@ test('branch', () =>
     expect( R.nav('s2.i').getValue() ).toBe( 40 );
     expect( R.nav('s2.i').kernel.fresh ).toBe( true );
     expect( R.nav('s2.i').kernel.computeCount ).toBe( 3 );
+});
+
+test('graft_leaf_overwrite', () =>
+{
+    function getTree() {
+        var S = tbuild();
+        S.i = t => 1;
+        S.c = t => t.i + 1;
+        S.d = t => t.i + 2;
+        return S;
+    }
+        
+    var R = tbuild();
+    var s = getTree();
+    R.s = s;
+    R.i   = t => 10;
+    R.s.d = t => t.i + 2;
     
+    R = unwrap(R);
+    R.init({});
+    
+    expect( R.nav('s.i').getValue() ).toBe( 1 );
+    expect( R.nav('s.c').getValue() ).toBe( 2 );
+    expect( R.nav('s.d').getValue() ).toBe( 12 );
 });
 
 test('input_relay', () =>
