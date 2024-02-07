@@ -194,7 +194,7 @@ class Node {
             var maxNameLen = opts.maxNameLen;
         }
         if( includeNonEnumerable===undefined )
-            includeNonEnumerable = false;
+            includeNonEnumerable = true;
         if( includeBranches===undefined )
             includeBranches = false;
         if( maxNameLen===undefined )
