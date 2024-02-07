@@ -13,7 +13,7 @@ const {TreeFiller} = require('./fill');
 
 class MapFuncBuilder extends TreeFiller
 {
-    constructor({src, mapGetFunc, mapSetFunc}) {
+    constructor({src, mapGetFunc, mapSetFunc, graft}) {
         super();
         src = unwrap(src);
         this.src = src;
@@ -27,6 +27,8 @@ class MapFuncBuilder extends TreeFiller
         this.dstKey = null;
         this.buildProxyBindings = null;
         this.dst = null;
+
+        this._graft = graft!==false;        
     }
     
     fill(dstParent, dstKey, buildProxyBindings) {
@@ -63,8 +65,11 @@ class MapFuncBuilder extends TreeFiller
             // this automatically grafts the src tree onto
             // dst[mioSrcBranch] if it is not a part of dst.  doesn't
             // necessarily *have* to though
-            this.dst.addc(mioSrcBranch, this.src);
-            this.dst.getc(mioSrcBranch).enumerable = false;
+            
+            if( this._graft ) {
+                this.dst.addc(mioSrcBranch, this.src);
+                this.dst.getc(mioSrcBranch).enumerable = false;
+            }
         }
         
         for( let n of this.src.iterTree() )
@@ -91,28 +96,38 @@ class MapFuncBuilder extends TreeFiller
 }
 exports.MapFuncBuilder = MapFuncBuilder;
 
-function map(src, mapFunc) {
+function map(src, mapFunc, opts)
+{
+    if( opts===undefined ) opts = {};
+    if( opts.graft === undefined ) opts.graft = true;
+    
     return new MapFuncBuilder({
         src,
         mapGetFunc: mapFunc,
-        mapSetFunc: null
+        mapSetFunc: null,
+        graft: opts.graft,
     });
 }
 exports.map = map;
 
-function mapBi(src, mapFunc, mapSetFunc)
+function mapBi(src, mapFunc, mapSetFunc, opts)
 {
+    if( opts===undefined ) opts = {};
+    if( opts.graft === undefined ) opts.graft = true;
+    
     if( typeof(mapFunc)=='function' && mapSetFunc===undefined )
         return new MapFuncBuilder({
             src,
             mapGetFunc: mapFunc,
-            mapSetFunc: mapFunc
+            mapSetFunc: mapFunc,
+            graft: opts.graft,
         });
     else if( typeof(mapFunc)=='function' && typeof(mapSetFunc)=='function' )
         return new MapFuncBuilder({
             src,
             mapGetFunc: mapFunc,
-            mapSetFunc: mapSetFunc
+            mapSetFunc: mapSetFunc,
+            graft: opts.graft,
         });
     else
         throw new TypeError(`mapBi requires src Node and one or two functions as arguments`);
