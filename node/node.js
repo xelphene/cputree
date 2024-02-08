@@ -8,6 +8,7 @@ const {
 } = require('../consts');
 const {toPath,Path} = require('../path');
 const NavError = require('../errors').NavError;
+const {NodeHandle} = require('./handle');
 
 class Node {
     constructor({parent}) {
@@ -15,6 +16,8 @@ class Node {
             throw new Error(`passing parent in constructor arg is deprecated`);
         this._parent = parent; // can be undefined
         this._enumerable = undefined;
+        this._handle = new NodeHandle(this);
+        this._auxHandles = [];
     }
     
     get isRoot () { return this._parent===undefined }
@@ -288,6 +291,37 @@ class Node {
     callIfNode(path, f) {
         if( this.hasNodeAtPath(path) )
             return f(this.nav(path));
+    }
+    
+    //
+    
+    get auxHandles () {
+        if( this._handle === null )
+            throw new Error(`attempt to get handle of an abandoned Node`);
+        return this._auxHandles
+    }
+    get handle () {
+        if( this._handle === null )
+            throw new Error(`attempt to get handle of an abandoned Node`);
+        return this._handle
+    }
+    
+    abandonHandles () {
+        //if( this._changeListeners.size > 0 )
+        //    throw new Error(`cannot abandon a Node with changeListeners`);
+        const handle = this._handle;
+        const auxHandles = this._auxHandles;
+        this._handle = null;
+        this._auxHandles = [];
+        return [handle, auxHandles];
+    }
+    
+    absorbHandles(otherNode) {
+        const [handle, auxHandles] = otherNode.abandonHandles();
+        handle.repoint(this);
+        auxHandles.map( h => h.repoint(this) );
+        this._auxHandles.push(handle);
+        this._auxHandles = this._auxHandles.concat(auxHandles);
     }
 }
 

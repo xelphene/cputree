@@ -8,6 +8,10 @@ const {GetKernel} = require('./get');
 
 var R;
 
+beforeEach(() => {
+    global.console = require('console');
+});
+
 beforeEach( () => {
     R = new ObjNode({});
 });

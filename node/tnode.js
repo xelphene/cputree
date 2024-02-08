@@ -81,6 +81,14 @@ class TNode extends LeafNode {
         const {InputKernel} = require('../kernel');
         return this.kernel instanceof InputKernel;
     }
+    
+    get isAnyInput () {
+        const {InputKernel, RelayInputKernel} = require('../kernel');
+        return (
+            this.kernel instanceof InputKernel ||
+            this.kernel instanceof RelayInputKernel
+        );
+    }
 
     copyNode () {
         return new this.constructor( this.kernel.copyKernel() );
@@ -105,7 +113,11 @@ class TNode extends LeafNode {
     set value (v)   { this.kernel.setValue(v) }
     setValue(v)     { this.kernel.setValue(v) }
     get value ()    { return this.getValue() }
-    getValue()      { return this.kernel.getValue() }
+    getValue()      {
+        if( this._handle===null )
+            throw new Error(`attempt to use abandoned TNode`);
+        return this.kernel.getValue()
+    }
     
     static get GetSetKernelClass () {
         return require('../kernel/getset').GetSetKernel;
@@ -120,6 +132,10 @@ class TNode extends LeafNode {
         if( ! (this._kernel instanceof require('../kernel/getset').GetSetKernel) )
             throw new TypeError(`${this.debugName}: use of nset Symbol accessor requires a GetSetKernel`);
         this._kernel.setFunc = f;
+    }
+    
+    merge(otherNode) {
+        
     }
 }
 exports.TNode = TNode;

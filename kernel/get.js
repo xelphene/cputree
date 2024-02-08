@@ -2,22 +2,26 @@
 'use strict';
 
 const {Kernel} = require('./kernel');
+const {Node} = require('../node/node');
+const {LeafNode} = require('../node/leaf');
 const {TNode} = require('../node/tnode');
 const {ObjNode} = require('../node/objnode');
 const {descFunc, anyToString} = require('../util');
+const {NodeHandle} = require('../node/handle');
 
 class GetKernel extends Kernel {
     constructor({bindings, getFunc}) {
         super();
-        for( let i=0; i<bindings.length; i++ )
-            if( 
-                ! (bindings[i] instanceof ObjNode) &&
-                ! (bindings[i] instanceof TNode)
-            ) {
-                console.log(bindings[i]);
-                throw new Error(`TNode | ObjNode instance required for binding ${i}`);
+        for( let i=0; i<bindings.length; i++ ) {
+            if( bindings[i] instanceof Node ) {
+                bindings[i] = bindings[i].handle;
+            } else if( bindings[i] instanceof NodeHandle ) {
+                // ok
+            } else {
+                throw new Error(`Node instance required for binding ${i}`);
             }
-        
+        }
+
         this._bindings = bindings;
         
         this.getFunc = getFunc;
@@ -78,19 +82,16 @@ class GetKernel extends Kernel {
     _getArgs() {
         var rv = [];
         for( let b of this._bindings ) {
-            if( b instanceof TNode ) {
-                this.node._listenTo(b);
-                rv.push( b.value )
-            } else if( b instanceof ObjNode ) {
+            if( b.node instanceof LeafNode ) {
+                this.node._listenTo(b.node);
+                rv.push( b.node.value )
+            } else {
                 // this Proxy will call this.dependencyFound
                 // OPT: cache the proxy returned here.
-                rv.push( b.getDTProxyOverMe({
-                    overNode: b,
+                rv.push( b.node.getDTProxyOverMe({
                     rcvr: this,
                     purpose: 'compute'
                 }));
-            } else {
-                throw new Error(`unknown binding: ${b}`);
             }
         }
         return rv;

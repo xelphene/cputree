@@ -679,9 +679,51 @@ class ObjNode extends Node {
     }
     set mergeOpts (opts) { this._mergeOpts=opts }
 
+    _mergeTNodes(key, bc, ic, opts)
+    {
+        if( !(bc instanceof TNode) )
+            throw new Error(`When merging TNodes, both must be TNode instances. ${bc.fullName} is not a TNode.`);
+        if( !(ic instanceof TNode) )
+            throw new Error(`When merging TNodes, both must be TNode instances. ${ic.fullName} is not a TNode.`);
+
+        //console.log(`bc.isAnyInput=${bc.isAnyInput}  ic.isAnyInput=${ic.isAnyInput}`);
+         
+        if( bc.isAnyInput && ic.isAnyInput )
+        {
+            //console.log(`${ic.fullName}: ok. both inputs. keep bc`);
+            bc.absorbHandles(ic);
+        }
+        else if( bc.isAnyInput && !ic.isAnyInput )
+        {
+            //console.log(`${ic.fullName}: ok. bc input, ic not. keep ic`);
+            // discard our version of the child
+            this.detachChild(key);
+            // adopt inc's version of the child
+            ic.detachParent();
+            this.addc(key, ic);
+            ic.absorbHandles(bc);
+        }
+        else if( !bc.isAnyInput && ic.isAnyInput )
+        {
+            //console.log(`${ic.fullName}: ok. bc non-input, ic input. keep bc.`);
+            bc.absorbHandles(ic);
+        }
+        else 
+        {
+            //console.log(`${ic.fullName}: fail? both are non-input leafs.`);
+            if( opts.leafConflict != 'keepBase' )
+                throw new Error(`tree merge failed at ${ic.fullName}: both nodes are non-input leaf nodes`);
+            bc.absorbHandles(ic);
+        }
+    }
+
     _mergeLeaf(key, bc, ic, opts)
     {
-        if( bc instanceof InputNode && ic instanceof InputNode )
+        if( bc instanceof TNode || ic instanceof TNode )
+        {
+            this._mergeTNodes(key, bc, ic, opts);
+        }
+        else if( bc instanceof InputNode && ic instanceof InputNode )
         {
             //console.log(`${ic.fullName}: ok. both inputs. keep bc`);
         }
@@ -723,6 +765,8 @@ class ObjNode extends Node {
             incT(this);
             return;
         }
+
+        this.absorbHandles(incT);
         
         var iCs = [];
         for( let ic of incT.iterChildren() )

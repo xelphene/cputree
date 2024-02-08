@@ -18,8 +18,8 @@ test('bad_default', () => {
         validate: validate.number
     })));
     
-    R.init({});
-    expect( () => R.getc('i').getValue() ).toThrow( 'failure initializing ☉.i to x (the default)' );
+    //R.init({});
+    expect( () => R.init({}) ).toThrow( 'failure initializing ☉.i to x (the default)' );
 });
 
 test('bad_init', () => {

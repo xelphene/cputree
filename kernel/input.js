@@ -66,5 +66,10 @@ class InputKernel extends Kernel {
         this._initted = true;
         this._value = value;
     }
+    
+    computeIfNeeded() {
+        if( ! this._initted )
+            this._setValue(this._defaultValue, true, true);
+    }
 }
 exports.InputKernel = InputKernel;

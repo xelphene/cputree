@@ -35,16 +35,13 @@ class GetSetKernel extends GetKernel
     _setArgs () {
         var rv = [];
         for( let b of this._bindings ) {
-            if( b instanceof TNode ) {
-                rv.push( b.value )
-            } else if( b instanceof ObjNode ) {
+            if( b.node instanceof LeafNode ) {
+                rv.push( b.node.value )
+            } else {
                 // this Proxy will call this.dependencyFound
-                rv.push( b.getDTProxyOverMe({
-                    overNode: b,
+                rv.push( b.node.getDTProxyOverMe({
                     purpose: 'setter'
                 }));
-            } else {
-                throw new Error(`unknown binding: ${b}`);
             }
         }
         return rv;
