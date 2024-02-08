@@ -23,6 +23,8 @@ class PowMapFuncBuilder extends MapFuncBuilder
     constructor(src, pow) {
         super({src, mapGetFunc:null, mapSetFunc:null });
         this.pow = unwrap(pow);
+        if( typeof(this.pow) != 'function' )
+            throw new TypeError('function required for pow argument');
     }
     
     get mapFuncBindings () { return this.buildProxyBindings }
