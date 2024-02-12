@@ -39,9 +39,23 @@ test('merge_tnodes_get_input', () =>
 
     B.b_only_k = t => t.k + ' + b_only';
     B.b_only_l = t => t.l + ' + b_only';
+
     
-    unwrap(B).merge( unwrap(getTreeA())  ); // TODO: build unwra pinto merge
+    const A = unwrap(getTreeA());
     B = unwrap(B);
+
+    const nodeRefs = {
+        A: {
+            k: A.getc('k'),
+            l: A.getc('l'),
+        },
+        B: {
+            k: B.getc('k'),
+            l: B.getc('l'),
+        }
+    };
+    
+    B.merge( A );
     B.init({});
     
     //B.logDebug();
@@ -66,7 +80,10 @@ test('merge_tnodes_get_input', () =>
     expect( B.nav('v').getValue()        ).toBe( 'new_v' )
     expect( B.nav('v_dep').getValue()    ).toBe( 'new_v + A.v_dep' )
     
-
+    console.log( nodeRefs.A.k.isRoot );
+    console.log( nodeRefs.A.k.kernel );
+    
+    console.log( nodeRefs.A.l.parent === B ); // true
     //B.logDebug();
     
 });

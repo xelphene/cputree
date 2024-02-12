@@ -48,6 +48,10 @@ class TNode extends LeafNode {
         return rv;
     }
     
+    detachKernel () {
+        this._kernel.detachNode();
+        this._kernel = null;
+    }
     get kernel () { return this._kernel; }
     set kernel (k) {
         if( this.isFinalized )
