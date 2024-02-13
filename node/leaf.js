@@ -5,6 +5,7 @@ const {parent, root, N} = require('../consts');
 const Node = require('./node').Node;
 const toPath = require('../path').toPath;
 const NavError = require('../errors').NavError;
+const {LeafHandle} = require('./handle');
 
 class LeafNode extends Node {
     constructor({parent}) {
@@ -14,6 +15,7 @@ class LeafNode extends Node {
         this._directEnumFlag = undefined;
         this._extListeners = [];
         this._listeningTo = new Set();
+        this._handle = new LeafHandle(this);
     }
 
     finalizeDefinition () { this._isFinalized = true }
@@ -66,11 +68,19 @@ class LeafNode extends Node {
     get listeningToStr () {
         return [...this._listeningTo].map(n => n.debugName).join(', ')
     }
-
+    
+    handleValueChanged (h) {}
+    handleValueSpoiled (h) {}
+    
     fireNodeValueChanged () {
         for( let l of [...this._changeListeners] ) {
             l.nodeValueChanged(this);
         }
+        
+        for( let h of this.handles )
+            for( let l of h.changeListeners )
+                l.handleValueChanged(h);
+                
         for( let f of this._extListeners )
             f(this.value);
     }
@@ -78,6 +88,9 @@ class LeafNode extends Node {
         for( let l of [...this._changeListeners] ) {
             l.nodeValueSpoiled(this);
         }
+        for( let h of this.handles )
+            for( let l of h.changeListeners )
+                l.handleValueSpoiled(h);
     }
     
     computeIfNeeded () { }

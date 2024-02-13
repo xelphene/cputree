@@ -23,6 +23,7 @@ const NavError = require('../errors').NavError;
 const GetSetNode = require('./getset').GetSetNode;
 const TNode = require('./tnode').TNode;
 const {ZygoteNode}  =require('./zygote');
+const {ObjHandle} = require('./handle');
 
 class ObjNode extends Node {
     constructor({parent}) {
@@ -56,6 +57,7 @@ class ObjNode extends Node {
         //this._mergeOpts = {
         //    leafConflict:'throw'
         //};
+        this._handle = new ObjHandle(this);
     }
 
     //////////////////////////////////////////////////////

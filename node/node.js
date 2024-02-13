@@ -16,7 +16,6 @@ class Node {
             throw new Error(`passing parent in constructor arg is deprecated`);
         this._parent = parent; // can be undefined
         this._enumerable = undefined;
-        this._handle = new NodeHandle(this);
         this._auxHandles = [];
     }
     
@@ -322,6 +321,10 @@ class Node {
         auxHandles.map( h => h.repoint(this) );
         this._auxHandles.push(handle);
         this._auxHandles = this._auxHandles.concat(auxHandles);
+    }
+    
+    get handles () {
+        return this._auxHandles.concat([this._handle]);
     }
 }
 

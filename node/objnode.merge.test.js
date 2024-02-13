@@ -3,9 +3,7 @@
 
 const {tbuild, unwrap, tinsert, bexist, tinput} = require('../tbuild');
 
-beforeEach(() => {
-    global.console = require('console');
-});
+//beforeEach(() => { global.console = require('console'); });
 
 function getTreeA () {
     var A = tbuild();
@@ -80,10 +78,12 @@ test('merge_tnodes_get_input', () =>
     expect( B.nav('v').getValue()        ).toBe( 'new_v' )
     expect( B.nav('v_dep').getValue()    ).toBe( 'new_v + A.v_dep' )
     
-    console.log( nodeRefs.A.k.isRoot );
-    console.log( nodeRefs.A.k.kernel );
+    expect( nodeRefs.A.k.isRoot ).toBe( true );
+    expect( nodeRefs.A.k.kernel ).toBe( null );
+    expect( nodeRefs.A.l.parent ).toBe( B );
     
-    console.log( nodeRefs.A.l.parent === B ); // true
+    //expect( () => nodeRefs.A.handle ).toThrow( 'attempt to get handle of an abandoned Node' );
     //B.logDebug();
     
 });
+
