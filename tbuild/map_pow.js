@@ -1,7 +1,7 @@
 
 'use strict';
 
-const {TNode} = require('../node/tnode');
+const {LeafNode} = require('../node');
 const {MapFuncBuilder} = require('./map');
 const {unwrap} = require('./util');
 
@@ -48,7 +48,7 @@ class PowMapFuncBuilder extends MapFuncBuilder
 }
 
 exports.powMap = function(src, pow) {
-    if( pow instanceof TNode )
+    if( pow instanceof LeafNode )
         return new PowMapNodeBuilder(src, pow);
     else if( typeof(pow)=='function')
         return new PowMapFuncBuilder(src, pow);
