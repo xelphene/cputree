@@ -50,6 +50,7 @@ class TGetNode extends TreeNode {
         let rv = super.debugLines;
         rv.push(`getter: ${descFunc(this._getFunc, 30)}`);
         rv.push(`computeCount: ${this.computeCount}`);
+        rv.push(`fresh: ${this.fresh}`);
         return rv;
     }
     

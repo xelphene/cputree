@@ -50,6 +50,10 @@ class TInputNode extends TreeNode {
         this._setValue(v, !this._initted, false);
         this.fireNodeValueChanged();
     }
+
+    set value (v) {
+        this.setValue(v);
+    }
     
     _setValue(value, onInit, isDefault) 
     {
