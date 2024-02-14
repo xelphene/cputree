@@ -28,5 +28,20 @@ class TreeNode extends LeafNode {
     
     _listenTo   () { throw new Error('deprecated'); }
     _unlistenTo () { throw new Error('deprecated'); }
+    
+    replace(newNode) {
+        if( ! newNode.isRoot )
+            throw new Error('newNode is already in a tree');
+        
+        this._unlistenAllHandles();
+        
+        newNode.absorbHandles(this);
+        
+        if( ! this.isRoot ) {
+            const key = this.key;
+            const parent = this.detachParent();
+            parent.addc(key, newNode);
+        }
+    }
 };
 exports.TreeNode = TreeNode;
