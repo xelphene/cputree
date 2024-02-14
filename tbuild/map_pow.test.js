@@ -53,47 +53,47 @@ test('node_node', () => {
 
 function test_rest_leaf () {
     expect( R.nav('mp.i').getValue() ).toBe( 2000 );
-    expect( R.nav('mp.i').kernel.fresh ).toBe( true );
-    expect( R.nav('mp.i').kernel.computeCount ).toBe( 1 );
+    expect( R.nav('mp.i').fresh ).toBe( true );
+    expect( R.nav('mp.i').computeCount ).toBe( 1 );
     
     R.nav('mp.i').setValue( 3000 );    
 
-    expect( R.nav('mp.i').kernel.fresh ).toBe( false );
+    expect( R.nav('mp.i').fresh ).toBe( false );
     expect( R.nav('o.i').getValue() ).toBe( 3 );
     expect( R.nav('mp.i').getValue() ).toBe( 3000 );
-    expect( R.nav('mp.i').kernel.computeCount ).toBe( 2 );
+    expect( R.nav('mp.i').computeCount ).toBe( 2 );
 
     R.nav('pow').setValue( 2 );    
     
-    expect( R.nav('mp.i').kernel.fresh ).toBe( false );
+    expect( R.nav('mp.i').fresh ).toBe( false );
     expect( R.nav('mp.i').getValue() ).toBe( 300 );
-    expect( R.nav('mp.i').kernel.computeCount ).toBe( 3 );
+    expect( R.nav('mp.i').computeCount ).toBe( 3 );
 }
 
 function test_branch_rest() {
     expect( R.nav('mp.i').getValue() ).toBe( 2000 );
     expect( R.nav('mp.f').getValue() ).toBe( 4000 );
-    expect( R.nav('mp.i').kernel.fresh ).toBe( true );
-    expect( R.nav('mp.f').kernel.fresh ).toBe( true );
-    expect( R.nav('mp.i').kernel.computeCount ).toBe( 1 );
-    expect( R.nav('mp.f').kernel.computeCount ).toBe( 1 );
+    expect( R.nav('mp.i').fresh ).toBe( true );
+    expect( R.nav('mp.f').fresh ).toBe( true );
+    expect( R.nav('mp.i').computeCount ).toBe( 1 );
+    expect( R.nav('mp.f').computeCount ).toBe( 1 );
     
     R.nav('mp.i').setValue( 3000 );
     
-    expect( R.nav('mp.i').kernel.fresh ).toBe( false );
-    expect( R.nav('mp.f').kernel.fresh ).toBe( true );
+    expect( R.nav('mp.i').fresh ).toBe( false );
+    expect( R.nav('mp.f').fresh ).toBe( true );
     expect( R.nav('o.i').getValue() ).toBe( 3 );
     expect( R.nav('mp.i').getValue() ).toBe( 3000 );
     expect( R.nav('mp.f').getValue() ).toBe( 4000 );
-    expect( R.nav('mp.i').kernel.computeCount ).toBe( 2 );
-    expect( R.nav('mp.f').kernel.computeCount ).toBe( 1 );
+    expect( R.nav('mp.i').computeCount ).toBe( 2 );
+    expect( R.nav('mp.f').computeCount ).toBe( 1 );
 
     R.nav('pow').setValue( 2 );    
     
-    expect( R.nav('mp.i').kernel.fresh ).toBe( false );
-    expect( R.nav('mp.f').kernel.fresh ).toBe( false );
+    expect( R.nav('mp.i').fresh ).toBe( false );
+    expect( R.nav('mp.f').fresh ).toBe( false );
     expect( R.nav('mp.i').getValue() ).toBe( 300 );
     expect( R.nav('mp.f').getValue() ).toBe( 400 );
-    expect( R.nav('mp.i').kernel.computeCount ).toBe( 3 );
-    expect( R.nav('mp.f').kernel.computeCount ).toBe( 2 );
+    expect( R.nav('mp.i').computeCount ).toBe( 3 );
+    expect( R.nav('mp.f').computeCount ).toBe( 2 );
 }

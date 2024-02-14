@@ -5,6 +5,7 @@ const {InputValidationError} = require('../errors');
 const {TreeNode} = require('./treenode');
 const {LeafNode} = require('./leaf');
 const {anyToString} = require('../util');
+const {TRelayInputNode} = require('./trelayinput');
 
 class TInputNode extends TreeNode {
     constructor({defaultValue, validate}) {
@@ -81,7 +82,19 @@ class TInputNode extends TreeNode {
         if( ! this._initted )
             this._setValue(this._defaultValue, true, true);
     }
+    
+    replaceWithRelay(srcNode) {
+        if( this.isFinalized )
+            throw new Error(`Cannot relay input after finalization`);
+        if( ! (srcNode instanceof LeafNode) )
+            throw new TypeError(`LeafNode required for srcNode`);
 
+        const newNode = new TRelayInputNode({
+            validate: this._validate,
+            srcNode:  srcNode
+        });
+        this.replace(newNode);
+    }
 }
 exports.TInputNode = TInputNode;
 

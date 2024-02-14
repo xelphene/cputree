@@ -3,7 +3,7 @@
 
 const {unwrap, getTBProxyHandler} = require('./util');
 const {TNode} = require('../node/tnode');
-const {InputKernel} = require('../kernel');
+const {TInputNode} = require('../node/tinput');
 const {TreeFiller} = require('./fill');
 
 class InputFiller extends TreeFiller {
@@ -14,9 +14,9 @@ class InputFiller extends TreeFiller {
     
     fill(dstParent, dstKey, buildProxyBindings) {
         unwrap(dstParent).addc(dstKey,
-            new TNode( new InputKernel({
+            new TInputNode({
                 defaultValue: this._defaultValue
-            }))
+            })
         );
     }
 }

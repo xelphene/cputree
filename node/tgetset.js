@@ -5,6 +5,7 @@ const {LeafNode} = require('./leaf');
 const {ObjNode} = require('./objnode');
 const {TGetNode} = require('./tget');
 const {descFunc, anyToString} = require('../util');
+const {nget, nset} = require('../consts');
 
 class TGetSetNode extends TGetNode
 {
@@ -48,8 +49,15 @@ class TGetSetNode extends TGetNode
     setValue(v) {
         let args = this._setArgs();
         args = args.concat([v]);
-        console.log(args);
+        //console.log(args);
         this._setFunc.apply(null, args);
+    }
+
+    set [nget] (f) {
+        this.getFunc = f;
+    }
+    set [nset] (f) {
+        this.setFunc = f;
     }
     
 }

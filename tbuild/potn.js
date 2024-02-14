@@ -54,13 +54,11 @@ class PotentialNode
 
         p.addc(
             this[pbKeyInParent],
-            new p.TNodeClass(
-                new p.TNodeClass.GetSetKernelClass({
-                    bindings: this[pbBuildProxy].bindings,
-                    getFunc:  () => { throw new Error(`a TNode with a GetSetKernel was created at ${p.fullName}.${this[pbKeyInParent].toString()}, but it's getFunc was not assigned.`) },
-                    setFunc:  () => { throw new Error(`a TNode with a GetSetKernel was created at ${p.fullName}.${this[pbKeyInParent].toString()}, but it's setFunc was not assigned.`) },
-                })
-            )
+            new p.TGetSetNodeClass({
+                bindings: this[pbBuildProxy].bindings,
+                getFunc:  () => { throw new Error(`a TGetSetNode was created at ${p.fullName}.${this[pbKeyInParent].toString()}, but it's getFunc was not assigned.`) },
+                setFunc:  () => { throw new Error(`a TGetSetNode was created at ${p.fullName}.${this[pbKeyInParent].toString()}, but it's setFunc was not assigned.`) },
+            })
         )
         
         return p.getc( this[pbKeyInParent] );
@@ -74,15 +72,15 @@ const PotentialNodeProxyHandler =
 {
     set(o, key, v) {
         if( key===nget ) {
-            var realGetSetNode = o[pgsExist]();
-            realGetSetNode.kernel.getFunc = v;
+            var realTGetSetNode = o[pgsExist]();
+            realTGetSetNode.getFunc = v;
             return true;
         } else if( key===nset ) {
             //const cpuProxyHandler = require('./conproxy').cpuProxyHandler;
             //var realGetSetNode = o[pgsExist]();
             //return cpuProxyHandler.set(realGetSetNode, key, v);
-            var realGetSetNode = o[pgsExist]();
-            realGetSetNode.kernel.setFunc = v;
+            var realTGetSetNode = o[pgsExist]();
+            realTGetSetNode.setFunc = v;
             return true;
         } else {
             // ANY set operation will trigger [pbExist]() and then 

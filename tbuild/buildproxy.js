@@ -3,10 +3,9 @@
 
 const {DEBUG, potnPathFromRoot} = require('../consts');
 const {N, TBProxyHandler, bexist, isDTProxy} = require('../consts');
-const {ObjNode} = require('../node/objnode');
-const {TNode} = require('../node/tnode');
-const {LeafNode} = require('../node/leaf');
-const {GetKernel} = require('../kernel');
+const {
+    TInputNode, TGetNode, LeafNode, ObjNode, TRelayInputNode
+} = require('../node');
 const tinsert = require('./tinsert');
 const {MapFuncBuilder} = require('./map');
 const {unwrap} = require('./util');
@@ -138,11 +137,11 @@ class BuildProxy
             if( o.hasc(key) )
                 o.del(key);
             this.log(`new getter`);
-            let tnode = new TNode( new GetKernel({
+            let tgetnode = new TGetNode({
                 bindings: this._bindings,
                 getFunc: v
-            }));
-            o.addc(key, tnode);
+            });
+            o.addc(key, tgetnode);
             return true;
         }
         
@@ -188,20 +187,24 @@ class BuildProxy
     
     assignToSettable(o, key, v)
     {
-        if( ! o.getc(key).canRelayInput )
-            throw new Error(`[non-relay-capable settable] = [leaf]: LHS is settable but cannot relay`);
+        //if( ! o.getc(key).canRelayInput )
+        //    throw new Error(`[non-relay-capable settable] = [leaf]: LHS is settable but cannot relay`);
+        if( ! (o.getc(key) instanceof TInputNode) )
+             throw new Error(`[non-TInputNode] = [leaf]: LHS is settable but is not an Input that can be converted to relay`);
         
         if( v instanceof LeafNode ) {
-            o.getc(key).relayInput( v );
+            //o.getc(key).relayInput( v );
+            o.getc(key).replaceWithRelay( v );
             return true;
         }
         
         if( typeof(v)=='function' ) {
-            let an = new TNode( new GetKernel({
+            let an = new TGetNode({
                 bindings: this.bindings,
                 getFunc: v
-            }));
-            o.getc(key).relayInput(an);
+            });
+            //o.getc(key).relayInput(an);
+            o.getc(key).replaceWithRelay( an );
             return true;
         }
         
@@ -210,7 +213,8 @@ class BuildProxy
         // make LHS relay *from* it        
         if( v instanceof PotentialNode ) {
             let rhsNode = o.root.addp( v[potnPathFromRoot], o.getc(key).copyNode() );
-            o.getc(key).relayInput( rhsNode );
+            //o.getc(key).relayInput( rhsNode );
+            o.getc(key).replaceWithRelay( rhsNode );
             return true;
         }
         

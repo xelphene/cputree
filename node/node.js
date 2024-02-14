@@ -326,7 +326,10 @@ class Node {
     }
     
     get handles () {
-        return this._auxHandles.concat([this._handle]);
+        if( this._handle !== null )
+            return this._auxHandles.concat([this._handle]);
+        else
+            return this._auxHandles;
     }
 }
 

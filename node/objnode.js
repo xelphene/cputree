@@ -92,6 +92,7 @@ class ObjNode extends Node {
     //get PostValidateComputeClass () { return PostValidateComputeNode }
     get GetSetNodeClass  () { return GetSetNode }
     get TNodeClass       () { return TNode }
+    get TGetSetNodeClass () { return require('./tgetset').TGetSetNode }
 
     get debugValue () {
         return Object.fromEntries(

@@ -33,7 +33,7 @@ class TreeNode extends LeafNode {
         if( ! newNode.isRoot )
             throw new Error('newNode is already in a tree');
         
-        this._unlistenAllHandles();
+        this._unlistenAllHandles(); // TODO: test this
         
         newNode.absorbHandles(this);
         

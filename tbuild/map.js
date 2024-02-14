@@ -4,7 +4,7 @@
 const {unwrap, getTBProxyHandler} = require('./util');
 const {TNode} = require('../node/tnode');
 const {LeafNode} = require('../node/leaf');
-const {MapBoundKernel} = require('../kernel');
+const {TMapBoundNode} = require('../node/tmapbound');
 const {
     mioSrcBranch, mioMapIn, mioMapOut, mioInput,
 } = require('../consts');
@@ -48,14 +48,12 @@ class MapFuncBuilder extends TreeFiller
 
     _fillLeaf()
     {
-        this.dstParent.addc(this.dstKey, new TNode(
-            new MapBoundKernel({
-                bindings: this.mapFuncBindings,
-                mapGetFunc: this.mapGetFunc,
-                mapSetFunc: this.mapSetFunc,
-                srcNode: this.src
-            })
-        ));
+        this.dstParent.addc(this.dstKey, new TMapBoundNode({
+            bindings: this.mapFuncBindings,
+            mapGetFunc: this.mapGetFunc,
+            mapSetFunc: this.mapSetFunc,
+            srcNode: this.src
+        }));
     }
     
     _fillBranch()
@@ -82,14 +80,12 @@ class MapFuncBuilder extends TreeFiller
                     .map( i => i.key ) 
                 );
             
-                let tn = new TNode(
-                    new MapBoundKernel({
-                        bindings: this.mapFuncBindings,
-                        mapGetFunc: this.mapGetFunc, 
-                        mapSetFunc: this.mapSetFunc,
-                        srcNode: n
-                    })
-                );
+                let tn = new TMapBoundNode({
+                    bindings: this.mapFuncBindings,
+                    mapGetFunc: this.mapGetFunc, 
+                    mapSetFunc: this.mapSetFunc,
+                    srcNode: n
+                });
                 this.dst.addNodeAtPath( newPath, tn );
             }
     }

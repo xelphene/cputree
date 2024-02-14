@@ -3,16 +3,15 @@
 
 const {N, TBProxyHandler, nget, nset} = require('../consts');
 const {TNode} = require('../node/tnode');
-const {RelayInputKernel} = require('../kernel/relayinput');
-const {GetKernel} = require('../kernel/get');
-const {MapBoundKernel} = require('../kernel');
-const {InputKernel} = require('../kernel/input');
 const {tbuild, unwrap, tinsert, bexist, tinput} = require('../tbuild');
 const {BuildProxy} = require('./buildproxy');
 
-beforeEach(() => {
-    global.console = require('console');
-});
+const {
+    TInputNode, TGetNode, LeafNode, ObjNode, TRelayInputNode, TMapBoundNode
+} = require('../node');
+
+
+beforeEach(() => { global.console = require('console'); });
 
 test('get', () =>
 {
@@ -29,10 +28,10 @@ test('get', () =>
     expect( R.hasOwnProperty(N) ).toBe( true );
     expect( R.hasOwnProperty(TBProxyHandler) ).toBe( true );
     
-    const tn = new TNode( new GetKernel({
+    const tn = new TGetNode({
         bindings: [],
         getFunc:  () => 900
-    }));
+    });
     unwrap(R).addc('d', tn);
     
     expect( R.d ).toBe( tn );
@@ -73,10 +72,10 @@ test('branch', () =>
     
     ////////////////////////////
     
-    expect( R.nav('s.i').kernel ).toBeInstanceOf( InputKernel );
-    expect( R.nav('s.c').kernel ).toBeInstanceOf( GetKernel );
-    expect( R.nav('s2.i').kernel ).toBeInstanceOf( MapBoundKernel );
-    expect( R.nav('s2.c').kernel ).toBeInstanceOf( MapBoundKernel );
+    expect( R.nav('s.i') ).toBeInstanceOf( TInputNode );
+    expect( R.nav('s.c') ).toBeInstanceOf( TGetNode );
+    expect( R.nav('s2.i') ).toBeInstanceOf( TMapBoundNode );
+    expect( R.nav('s2.c') ).toBeInstanceOf( TMapBoundNode );
     
     expect( R.nav('s.i').getValue()  ).toBe( 222 );
     expect( R.nav('s.c').getValue()  ).toBe( 223 );
@@ -85,18 +84,18 @@ test('branch', () =>
     
     R.nav('s.i').setValue( 300 );
     
-    expect( R.nav('s2.i').kernel.fresh ).toBe( false );
+    expect( R.nav('s2.i').fresh ).toBe( false );
     expect( R.nav('s2.i').getValue() ).toBe( 300 );
-    expect( R.nav('s2.i').kernel.fresh ).toBe( true );
-    expect( R.nav('s2.i').kernel.computeCount ).toBe( 2 );
+    expect( R.nav('s2.i').fresh ).toBe( true );
+    expect( R.nav('s2.i').computeCount ).toBe( 2 );
     
     R.nav('s2.i').setValue( 40 );
 
     expect( R.nav('s.i').getValue() ).toBe( 40 );
-    expect( R.nav('s2.i').kernel.fresh ).toBe( false );
+    expect( R.nav('s2.i').fresh ).toBe( false );
     expect( R.nav('s2.i').getValue() ).toBe( 40 );
-    expect( R.nav('s2.i').kernel.fresh ).toBe( true );
-    expect( R.nav('s2.i').kernel.computeCount ).toBe( 3 );
+    expect( R.nav('s2.i').fresh ).toBe( true );
+    expect( R.nav('s2.i').computeCount ).toBe( 3 );
 });
 
 test('graft_leaf_overwrite', () =>
@@ -123,6 +122,7 @@ test('graft_leaf_overwrite', () =>
     expect( R.nav('s.d').getValue() ).toBe( 12 );
 });
 
+
 test('input_relay', () =>
 {
     var R = tbuild();
@@ -146,10 +146,10 @@ test('input_relay', () =>
     expect( R.nav('i1').getValue() ).toBe( 21 );
     expect( R.nav('i2').getValue() ).toBe( 20 );
     expect( R.nav('i3').getValue() ).toBe( 22 );
-    expect( R.nav('i1').kernel ).toBeInstanceOf( RelayInputKernel );
-    expect( R.nav('i2').kernel ).toBeInstanceOf( RelayInputKernel );
-    expect( R.nav('i3').kernel ).toBeInstanceOf( RelayInputKernel );
-    expect( R.nav('c').kernel  ).toBeInstanceOf( GetKernel );
+    expect( R.nav('i1') ).toBeInstanceOf( TRelayInputNode );
+    expect( R.nav('i2') ).toBeInstanceOf( TRelayInputNode );
+    expect( R.nav('i3') ).toBeInstanceOf( TRelayInputNode);
+    expect( R.nav('c')  ).toBeInstanceOf( TGetNode );
     
     R.nav('src_input').setValue(30);
 
@@ -204,12 +204,11 @@ test('potn_create_rhs', () =>
     
     expect( R.nav('i').getValue() ).toBe( 2 );
     expect( R.nav('o.i').getValue() ).toBe( 2 );
-    expect( R.nav('i').kernel ).toBeInstanceOf( RelayInputKernel );
-    expect( R.nav('o.i').kernel ).toBeInstanceOf( InputKernel );
+    expect( R.nav('i') ).toBeInstanceOf( TRelayInputNode );
+    expect( R.nav('o.i') ).toBeInstanceOf( TInputNode );
         
     //R.logDebug();
 });
-
 
 test('potn_create_getset', () =>
 {
@@ -218,7 +217,7 @@ test('potn_create_getset', () =>
     
     R.o.gs[nget] = t => t.i * 10;
     R.o.gs[nset] = (t,v) => t.i = v / 10;
-    
+
     R = unwrap(R);
     R.init({});
     
@@ -231,6 +230,7 @@ test('potn_create_getset', () =>
     
     //R.logDebug();
 });
+
 
 test('potn_create_getset_rev', () =>
 {
@@ -265,9 +265,8 @@ test('potn_create_getset_no_set', () =>
     R.init({});
 
     expect( () => R.nav('o.gs').setValue( 300 ) )
-        .toThrow("a TNode with a GetSetKernel was created at ☉.o.gs, but it's setFunc was not assigned");
+        .toThrow("a TGetSetNode was created at ☉.o.gs, but it's setFunc was not assigned");
 });
-
 test('potn_create_getset_no_get', () =>
 {
     var R = tbuild();
@@ -279,7 +278,7 @@ test('potn_create_getset_no_get', () =>
     R = unwrap(R);
 
     expect( () => R.init({}) )
-        .toThrow("a TNode with a GetSetKernel was created at ☉.o.gs, but it's getFunc was not assigned");
+        .toThrow("a TGetSetNode was created at ☉.o.gs, but it's getFunc was not assigned");
 });
 
 test('tinput', () =>
