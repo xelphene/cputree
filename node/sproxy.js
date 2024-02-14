@@ -145,7 +145,7 @@ exports.getDTProxyHandler = function({overNode, rcvr, purpose})
             log(`get leaf ${overNode.fullName}.${key.toString()}`);
             rcvr.dependencyFound(overNode.getProp(key));
             if( overNode.isTreeFinalized ) {
-                return overNode.getProp(key).value;
+                return overNode.getProp(key).getValue();
             }
             else
                 return PRE_FINAL_LEAF_VALUE;

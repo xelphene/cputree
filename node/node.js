@@ -133,7 +133,7 @@ class Node {
     }
     
     get debugName () {
-        return `${this.fullName}(${this.nodeAbbr})`;
+        return `${this.fullName}(${this.constructor.name})`;
     }
 
     get debugInfo  () { return '' }
@@ -188,6 +188,10 @@ class Node {
         }
     }
     
+    get debugLines () {
+        return [`class: ${this.constructor.name}`];
+    }
+    
     logDebug(opts) {
         const {TNode} = require('./tnode');
         if( typeof(opts)=='object' ) {
@@ -211,10 +215,8 @@ class Node {
                     console.log( sprintf(`%-${maxNameLen}s %s`, '', l) );
             }
             */
-            if( n instanceof TNode ) {
-                for( let l of n.debugLines )
-                    console.log( sprintf(`%-${maxNameLen}s %s`, '', l) );
-            }
+            for( let l of n.debugLines )
+                console.log( sprintf(`%-${maxNameLen}s %s`, '', l) );
         }
     }
 

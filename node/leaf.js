@@ -15,6 +15,7 @@ class LeafNode extends Node {
         this._directEnumFlag = undefined;
         this._extListeners = [];
         this._listeningTo = new Set();
+        this._listeningToHandles = new Set();
         this._handle = new LeafHandle(this);
     }
 
@@ -39,7 +40,10 @@ class LeafNode extends Node {
     addChangeListener(node) { this._changeListeners.add(node) }
     delChangeListener(node) { this._changeListeners.delete(node) }
     get changeListeners () { return this._changeListeners }
-    get listenerNames() { return [...this._changeListeners].map( n => n.debugName ) }
+    get listenerNames() {
+        return [...this._changeListeners]
+            .map( n => n.debugName )
+    }
     get listenerNamesStr() { return this.listenerNames.join(', ') }
     get speakingTo     () { return [...this._changeListeners]; }
     get speakingToStr  () { return this.speakingTo.map(  n => n.debugName ).join(', ') }
@@ -54,6 +58,23 @@ class LeafNode extends Node {
     }
     _unlistenAll() {
         for( let n of this._listeningTo )
+            n.delChangeListener(this);
+    }
+
+    _listenToHandle(handle) {	
+        if( ! (handle instanceof LeafHandle) )
+            throw new Error('LeafHandle instance required');
+        this._listeningToHandles.add(handle);
+        handle.addChangeListener(this);
+    }
+    _unlistenToHandle(handle) {
+        if( ! (handle instanceof LeafHandle) )
+            throw new Error('LeafHandle instance required');
+        handle.delChangeListener(this);
+        this._listeningToHandles.delete(handle);
+    }
+    _unlistenAllHandles() {
+        for( let n of this._listeningToHandles )
             n.delChangeListener(this);
     }
 

@@ -24,6 +24,7 @@ const GetSetNode = require('./getset').GetSetNode;
 const TNode = require('./tnode').TNode;
 const {ZygoteNode}  =require('./zygote');
 const {ObjHandle} = require('./handle');
+const {TreeNode} = require('./treenode');
 
 class ObjNode extends Node {
     constructor({parent}) {
@@ -231,7 +232,7 @@ class ObjNode extends Node {
         
         for( let c of this.iterComputeChildren() )
         {
-            if( c instanceof GetSetNode || c instanceof ZygoteNode || c instanceof TNode ) {
+            if( c instanceof GetSetNode || c instanceof ZygoteNode || c instanceof TNode || c instanceof TreeNode ) {
                 if( c.settable )
                     Object.defineProperty(this._o, c.key, {
                         get: () => c.value,
@@ -435,7 +436,7 @@ class ObjNode extends Node {
             this._computes[key] = node;
         else if( node instanceof ZygoteNode )
             this._computes[key] = node;
-        else if( node instanceof TNode )
+        else if( (node instanceof TNode) || (node instanceof TreeNode) )
             this._computes[key] = node;
         else if( node instanceof InputNode )
             this._inputs[key] = node;
@@ -839,6 +840,9 @@ class ObjNode extends Node {
                 delete unused[k];
             }
             if( this.hasc(k) && (this.getc(k) instanceof TNode) && this.getc(k).settable ) {
+                this.getc(k).setValue( input[k] );
+            }
+            if( this.hasc(k) && (this.getc(k) instanceof TreeNode) && this.getc(k).settable ) {
                 this.getc(k).setValue( input[k] );
             }
             if( typeof(input[k])=='object' && this.hasObjWithKey(k) ) {

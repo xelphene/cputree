@@ -75,8 +75,10 @@ class InputNode extends LeafNode {
     }
 
     get settable () { return ! this.isLinked }
-
-    get value ()  {
+    
+    get value () { return this.getValue() }
+    
+    getValue ()  {
         if( this.isLinked ) 
         {
             if( ! this.isFinalized )

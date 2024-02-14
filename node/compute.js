@@ -186,7 +186,9 @@ class BaseComputeNode extends LeafNode {
         }
     }
     
-    get value () {
+    get value () { return this.getValue() }
+    
+    getValue () {
         if( ! this.isFinalized )
             return PRE_FINAL_LEAF_VALUE;
 
