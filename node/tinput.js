@@ -38,6 +38,8 @@ class TInputNode extends TreeNode {
     get validate () { return this._validate }
 
     get fresh () { return true }
+
+    get value () { return this.getValue() }
     
     getValue () {
         if( ! this._initted )

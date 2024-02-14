@@ -103,6 +103,8 @@ class TGetNode extends TreeNode {
         return rv;
     }
 
+    get value () { return this.getValue() }
+    
     getValue ()
     {
         if( this._fresh )
