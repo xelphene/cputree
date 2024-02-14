@@ -74,7 +74,7 @@ class TGetNode extends TreeNode {
     }
     handleValueSpoiled(handle) {
         if( this.fresh ) {
-            this.log(`heard handleValueSpoiled from ${node.debugName}`);
+            this.log(`heard handleValueSpoiled from ${handle.node.debugName}`);
             this._fresh = false;
             this.fireNodeValueSpoiled();
         }
