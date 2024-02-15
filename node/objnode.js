@@ -25,6 +25,7 @@ const TNode = require('./tnode').TNode;
 const {ZygoteNode}  =require('./zygote');
 const {ObjHandle} = require('./handle');
 const {TreeNode} = require('./treenode');
+const {TInputNode} = require('./tinput');
 
 class ObjNode extends Node {
     constructor({parent}) {
@@ -727,14 +728,63 @@ class ObjNode extends Node {
         }
     }
 
+    _mergeTreeNodes(key, bc, ic, opts)
+    {
+        if( !(bc instanceof TreeNode) )
+            throw new Error(`When merging TNodes, both must be TNode instances. ${bc.fullName} is not a TNode.`);
+        if( !(ic instanceof TreeNode) )
+            throw new Error(`When merging TNodes, both must be TNode instances. ${ic.fullName} is not a TNode.`);
+
+        //console.log(`${bc.fullName}  bc=${bc.constructor.name}  ic=${ic.constructor.name}`);
+         
+        if( (bc instanceof TInputNode) && (ic instanceof TInputNode) )
+        {
+            //console.log(`${ic.fullName}: ok. both inputs. keep bc`);
+            bc.absorbHandles(ic);
+            ic.detachParent();
+            ic._unlistenAllHandles(); // TODO
+        }
+        else if( (bc instanceof TInputNode) && !(ic instanceof TInputNode) )
+        {
+            //console.log(`${ic.fullName}: ok. bc input, ic not. keep ic`);
+            // discard our version of the child
+            this.detachChild(key);
+            // adopt inc's version of the child
+            ic.detachParent();
+            this.addc(key, ic);
+            ic.absorbHandles(bc);
+            bc._unlistenAllHandles(); // TODO
+        }
+        else if( !(bc instanceof TInputNode) && (ic instanceof TInputNode) )
+        {
+            //console.log(`${ic.fullName}: ok. bc non-input, ic input. keep bc.`);
+            bc.absorbHandles(ic);
+            ic.detachParent();
+            ic._unlistenAllHandles(); // TODO
+        }
+        else 
+        {
+            //console.log(`${ic.fullName}: fail? both are non-input leafs.`);
+            if( opts.leafConflict != 'keepBase' )
+                throw new Error(`tree merge failed at ${ic.fullName}: both nodes are non-input leaf nodes`);
+            bc.absorbHandles(ic);
+            ic.detachParent();
+            ic._unlistenAllHandles(); // TODO
+        }
+    }
+
     _mergeLeaf(key, bc, ic, opts)
     {
-        if( bc instanceof TNode || ic instanceof TNode )
-        {
+        if( bc instanceof TNode )
+            throw new Error(`${bc.fullName} is a TNode`);
+        if( ic instanceof TNode )
+            throw new Error(`${ic.fullName} is a TNode`);
+            
+        if( bc instanceof TNode || ic instanceof TNode ) {
             this._mergeTNodes(key, bc, ic, opts);
-        }
-        else if( bc instanceof InputNode && ic instanceof InputNode )
-        {
+        } else if( bc instanceof TreeNode || ic instanceof TreeNode ) {
+            this._mergeTreeNodes(key, bc, ic, opts);
+        } else if( bc instanceof InputNode && ic instanceof InputNode ) {
             //console.log(`${ic.fullName}: ok. both inputs. keep bc`);
         }
         else if( bc instanceof InputNode && ! (ic instanceof InputNode) ) 

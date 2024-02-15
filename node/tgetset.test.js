@@ -20,7 +20,7 @@ test('bind_obj', () => {
         bindings: [R],
         getFunc: t => t.i * 10,
         setFunc: (t,v) => {
-            console.log(`in c setFunc. v=${v}. t.i=${t.i}`);
+            //console.log(`in c setFunc. v=${v}. t.i=${t.i}`);
             t.i = v / 10
         }
     }));
@@ -35,7 +35,7 @@ test('bind_obj', () => {
         
     R.getc('c').setValue(20);
 
-    R.logDebug();
+    //R.logDebug();
     
     expect( R.getc('c').fresh ).toBe( false );
     expect( R.getc('c').computeCount ).toBe( 1 );
