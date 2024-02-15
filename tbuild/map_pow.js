@@ -27,7 +27,6 @@ class PowMapFuncBuilder extends MapFuncBuilder
             throw new TypeError('function required for pow argument');
     }
     
-    get mapFuncBindings () { return this.buildProxyBindings }
     get mapGetFunc      () {
         const pow = this.pow;
         return function () {
