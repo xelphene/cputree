@@ -187,6 +187,9 @@ class BuildProxy
     
     assignToSettable(o, key, v)
     {
+        // TODO:
+        // if LHS is a settable TMapBoundNode which has some input pointing at it
+        
         //if( ! o.getc(key).canRelayInput )
         //    throw new Error(`[non-relay-capable settable] = [leaf]: LHS is settable but cannot relay`);
         if( ! (o.getc(key) instanceof TInputNode) )
@@ -226,11 +229,14 @@ exports.BuildProxy = BuildProxy;
 
 function tbuild (root, opts)
 {
-    if( root===undefined || root===null )
-        root = new ObjNode({});
-    
     if( opts===undefined )
         opts = {};
+
+    if( opts.ObjNodeClass===undefined )
+        opts.ObjNodeClass = ObjNode;
+
+    if( root===undefined || root===null )
+        root = new opts.ObjNodeClass({});
 
     if( opts.bind===undefined )
         opts.bind = [root];
