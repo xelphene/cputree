@@ -193,7 +193,6 @@ class Node {
     }
     
     logDebug(opts) {
-        const {TNode} = require('./tnode');
         if( typeof(opts)=='object' ) {
             var includeNonEnumerable = opts.includeNonEnumerable;
             var includeBranches = opts.includeBranches;
@@ -209,12 +208,6 @@ class Node {
         for( let n of this.iterTree({includeNonEnumerable}) ) {
             if( n.isLeaf || includeBranches )
                 console.log( sprintf(`%-${maxNameLen}s`, n.fullName) );
-            /*
-            if( n instanceof TNode ) {
-                for( let l of n.vNode.debugLines )
-                    console.log( sprintf(`%-${maxNameLen}s %s`, '', l) );
-            }
-            */
             for( let l of n.debugLines )
                 console.log( sprintf(`%-${maxNameLen}s %s`, '', l) );
         }
