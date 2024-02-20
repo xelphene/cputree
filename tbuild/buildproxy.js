@@ -134,13 +134,16 @@ class BuildProxy
         }
         
         if( typeof(v)=='function' ) {
-            if( o.hasc(key) )
-                o.del(key);
             this.log(`new getter`);
             let tgetnode = new TGetNode({
                 bindings: this._bindings,
                 getFunc: v
             });
+            if( o.hasc(key) ) {
+                tgetnode.absorbHandles(o.getc(key));
+                o.getc(key).safeDestroy();
+                //o.del(key);
+            }
             o.addc(key, tgetnode);
             return true;
         }
