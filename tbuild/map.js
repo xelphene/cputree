@@ -3,6 +3,7 @@
 
 const {unwrap, getTBProxyHandler} = require('./util');
 const {LeafNode} = require('../node/leaf');
+const {TInputNode} = require('../node/tinput');
 const {TMapBoundNode} = require('../node/tmapbound');
 const {
     mioSrcBranch, mioMapIn, mioMapOut, mioInput,
@@ -30,6 +31,8 @@ class MapFuncBuilder extends TreeFiller
         this._graft = graft!==false;        
     }
     
+    get willFillLeaf () { return this.src instanceof LeafNode }
+    
     fill(dstParent, dstKey, buildProxyBindings) {
         this.dstParent = dstParent;
         this.dstKey = dstKey;
@@ -44,6 +47,7 @@ class MapFuncBuilder extends TreeFiller
     get mapSetFunc      () { return this._mapSetFunc }
     get mapGetFunc      () { return this._mapGetFunc }
     get mapFuncBindings () { return this.buildProxyBindings }
+    get replaceSrcInputs () { return false }
 
     _fillLeaf()
     {
@@ -74,24 +78,38 @@ class MapFuncBuilder extends TreeFiller
             }
         }
         
-        for( let n of this.src.iterTree() )
-            if( n.isLeaf )
-            {
-                let newPath = toPath(
-                    n.nodesToAncestor(this.src)
-                    .slice(0,-1)
-                    .reverse()
-                    .map( i => i.key ) 
-                );
+        for( let srcNode of this.src.iterTree() ) {
+            if( ! srcNode.isLeaf )
+                continue;
+
+            let dstPath = toPath(
+                srcNode.nodesToAncestor(this.src)
+                .slice(0,-1)
+                .reverse()
+                .map( i => i.key ) 
+            );
             
-                let tn = new TMapBoundNode({
+            if( this.replaceSrcInputs && srcNode instanceof TInputNode ) {
+                let dstNode = new TInputNode({});
+                this.dst.addNodeAtPath( dstPath, dstNode );
+
+                let srcNodeNew = new TMapBoundNode({
                     bindings: this.mapFuncBindings,
                     mapGetFunc: this.mapGetFunc, 
                     mapSetFunc: this.mapSetFunc,
-                    srcNode: n
+                    srcNode: dstNode
                 });
-                this.dst.addNodeAtPath( newPath, tn );
+                srcNode.replace(srcNodeNew);
+            } else {
+                let dstNode = new TMapBoundNode({
+                    bindings: this.mapFuncBindings,
+                    mapGetFunc: this.mapGetFunc, 
+                    mapSetFunc: this.mapSetFunc,
+                    srcNode
+                });
+                this.dst.addNodeAtPath( dstPath, dstNode );
             }
+        }
     }
 }
 exports.MapFuncBuilder = MapFuncBuilder;
