@@ -9,12 +9,8 @@ exports.bexpand = exports.consts.bexpand;
 
 exports.node = require('./node');
 exports.ObjNode = exports.node.ObjNode;
-exports.BaseComputeNode = exports.node.BaseComputeNode;
-//exports.ComputeNode = exports.node.ComputeNode;
 exports.BranchNode = exports.node.BranchNode;
 exports.LeafNode = exports.node.LeafNode;
-exports.MapNode = exports.node.MapNode;
-exports.GetSetNode = exports.node.GetSetNode;
 
 exports.CTL = require('./consts').CTL;
 exports.enumerable = require('./consts').enumerable;

@@ -10,10 +10,6 @@ const {
     isDTProxy, dtProxyWrappedObject
 } = require('../consts');
 
-//const ComputeNode = require('./compute').ComputeNode;
-const BaseComputeNode = require('./compute').BaseComputeNode;
-//const PostValidateComputeNode = require('./compute').PostValidateComputeNode;
-const MapNode = require('./map').MapNode;
 const Node = require('./node').Node
 const getDTProxyHandler = require('./sproxy').getDTProxyHandler;
 const {allOwnKeys, allOwnValues} = require('../util');
@@ -81,10 +77,7 @@ class ObjNode extends Node {
         return util.inspect( this2.debugValue );
     }
     
-    //get ComputeNodeClass () { return ComputeNode }
     get BranchNodeClass  () { return ObjNode }
-    get MapNodeClass     () { return MapNode }
-    //get PostValidateComputeClass () { return PostValidateComputeNode }
     get TGetSetNodeClass () { return require('./tgetset').TGetSetNode }
 
     get debugValue () {
@@ -255,7 +248,6 @@ class ObjNode extends Node {
     hasLeafWithKey (key) {
         return this._computes.hasOwnProperty(key)
     }
-    //hasComputeWithKey (key) { return this._computes.hasOwnProperty(key) }
     hasObjWithKey     (key) { return this._subs.hasOwnProperty(key) }
     hasBranchWithKey  (key) { return this.hasObjWithKey(key) }
     
@@ -347,14 +339,6 @@ class ObjNode extends Node {
         return this.add(key, new this.BranchNodeClass({}));
     }
     
-    addMap(key) {
-        return this.add( key, new this.MapNodeClass({}) );
-    }
-    
-    //addCompute(key, computeFunc) {
-    //    return this.add( key, new this.ComputeNodeClass({computeFunc}) );
-    //}
-    
     add(key, node) 
     {
         if( this.definitionFinalized )
@@ -378,8 +362,6 @@ class ObjNode extends Node {
             node(child);
             return child;
         }
-        else if( node instanceof BaseComputeNode )
-            this._computes[key] = node;
         else if( node instanceof TreeNode )
             this._computes[key] = node;
         else if( node instanceof ObjNode )
@@ -394,16 +376,6 @@ class ObjNode extends Node {
         node.parentAttaching(this);
         this._childKeysInAddedOrder.push(key);
         return node;
-    }
-
-    computeToMap(key) {
-        const {getMapOutBCF} = require('../mio');
-        
-        let branchComputeFunc = this._computes[key].computeFunc;
-
-        this.delc(key);
-        
-        this.add(key, getMapOutBCF(branchComputeFunc));
     }
 
     //////////////////////////////////////////////////////

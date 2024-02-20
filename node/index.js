@@ -2,9 +2,6 @@
 'use strict';
 
 exports.ObjNode = require('./objnode').ObjNode;
-exports.BaseComputeNode = require('./compute').BaseComputeNode;
-exports.ComputeNode = require('./compute').ComputeNode;
-exports.MapNode = require('./map').MapNode;
 exports.LeafNode = require('./leaf').LeafNode;
 
 exports.TInputNode = require('./tinput').TInputNode;
