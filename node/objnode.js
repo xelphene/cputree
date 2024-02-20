@@ -13,7 +13,6 @@ const {
 //const ComputeNode = require('./compute').ComputeNode;
 const BaseComputeNode = require('./compute').BaseComputeNode;
 //const PostValidateComputeNode = require('./compute').PostValidateComputeNode;
-const InputNode = require('./input').InputNode;
 const MapNode = require('./map').MapNode;
 const Node = require('./node').Node
 const getDTProxyHandler = require('./sproxy').getDTProxyHandler;
@@ -30,7 +29,6 @@ class ObjNode extends Node {
         super({parent});
         
         this._childKeysInAddedOrder = [];
-        this._inputs = {};
         this._computes = {};
         this._subs = {};
 
@@ -84,7 +82,6 @@ class ObjNode extends Node {
         return util.inspect( this2.debugValue );
     }
     
-    get InputNodeClass   () { return InputNode }
     //get ComputeNodeClass () { return ComputeNode }
     get BranchNodeClass  () { return ObjNode }
     get MapNodeClass     () { return MapNode }
@@ -110,11 +107,6 @@ class ObjNode extends Node {
         
         if( initialInput !== undefined )
             this.applyInput(initialInput, true);
-        
-        for( let i of this.iterTreeInputUnlinked() ) {
-            if( ! i.valueInited )
-                i.initValue(false);
-        }
         
         this.computeIfNeeded();
     }
@@ -212,23 +204,6 @@ class ObjNode extends Node {
             throw new Error('can only call finalizeUnerlyingObject() once');
         }
         
-        for( let i of this.iterInputChildren() ) {
-            if( i.settable ) {
-                Object.defineProperty(this._o, i.key, {
-                    get: () => i.value,
-                    set: v  => i.value = v,
-                    enumerable: i.enumerable,
-                    configurable: false,
-                });
-            } else {
-                Object.defineProperty(this._o, i.key, {
-                    get: () => i.value,
-                    enumerable: i.enumerable,
-                    configurable: false,
-                });
-            }
-        }
-        
         for( let c of this.iterComputeChildren() )
         {
             if( c instanceof GetSetNode || c instanceof TreeNode ) {
@@ -276,17 +251,9 @@ class ObjNode extends Node {
 
     hasNodeWithKey (key) {
         return (
-            this._inputs.hasOwnProperty(key) ||
             this._computes.hasOwnProperty(key) ||
             this._subs.hasOwnProperty(key)
         )
-    }
-    hasInputWithKey   (key) { return this._inputs.hasOwnProperty(key) }
-    hasUnlinkedInputWithKey   (key) {
-        if( this._inputs.hasOwnProperty(key) )
-            return ! this._inputs[key].isLinked;
-        else
-            return false;
     }
     //hasComputeWithKey (key) { return this._computes.hasOwnProperty(key) }
     hasGetSetWithKey (key) { return this._computes.hasOwnProperty(key) }
@@ -294,7 +261,6 @@ class ObjNode extends Node {
     hasBranchWithKey  (key) { return this.hasObjWithKey(key) }
     hasLeafWithKey    (key) {
         return (
-            this.hasInputWithKey(key) || 
             this.hasGetSetWithKey(key)
         )
     }
@@ -327,9 +293,7 @@ class ObjNode extends Node {
         if( typeof(key)!='string' && typeof(key)!='symbol' )
             throw new TypeError(`Invalid key ${key} of type ${typeof(key)} for getProp on ${this.fullName}`);
             
-        if( this._inputs.hasOwnProperty(key) ) {
-            return this._inputs[key];
-        } else if( this._computes.hasOwnProperty(key) ) {
+        if( this._computes.hasOwnProperty(key) ) {
             return this._computes[key];
         } else if( this._subs.hasOwnProperty(key) ) {
             return this._subs[key];
@@ -370,8 +334,6 @@ class ObjNode extends Node {
             delete this._subs[childKey];
         else if( this._computes.hasOwnProperty(childKey) )
             delete this._computes[childKey];
-        else if( this._inputs.hasOwnProperty(childKey) )
-            delete this._inputs[childKey];
         else
             throw new Error('no such key');
         
@@ -407,9 +369,6 @@ class ObjNode extends Node {
     
     add(key, node) 
     {
-        const conProxyUnwrap = require('../tmpl/conproxy').conProxyUnwrap;
-        node = conProxyUnwrap(node);
-        
         if( this.definitionFinalized )
             throw new Error(`attempt to add node after definitionFinalized`);
         if( Array.isArray(key) )
@@ -435,8 +394,6 @@ class ObjNode extends Node {
             this._computes[key] = node;
         else if( node instanceof TreeNode )
             this._computes[key] = node;
-        else if( node instanceof InputNode )
-            this._inputs[key] = node;
         else if( node instanceof ObjNode )
             this._subs[key] = node;
         else {
@@ -560,19 +517,6 @@ class ObjNode extends Node {
     // get other personalities of this Node
     //////////////////////////////////////////////////////
 
-    getConProxy() {
-        //const conproxy = require('../tmpl/conproxy');
-        //return new Proxy(this, conproxy.conProxyHandler);
-        if( this._conProxy==null ) {
-            const conproxy = require('../tmpl/conproxy');
-            this._conProxy = new Proxy(this, conproxy.conProxyHandler);
-        }
-        return this._conProxy;
-    }
-    
-    get [C] () { return this.getConProxy(); }
-    get C   () { return this.getConProxy(); }
-    
     get [O] () { return this.rawObject; }
     get O   () { return this.rawObject; }
     
@@ -618,51 +562,6 @@ class ObjNode extends Node {
     }
 
     //////////////////////////////////////////////////////
-    // work with Nodes designated as "major" Nodes
-    //////////////////////////////////////////////////////
-
-    set majors (majors) {
-        if( ! Array.isArray(majors) )
-            throw new Error('majors must be an array');
-        
-        const conProxyUnwrap = require('../tmpl/conproxy').conProxyUnwrap;
-        this._majorPaths = [];
-        
-        for( let m of majors ) {
-            m = conProxyUnwrap(m);
-            let p;
-            if( m instanceof Node )
-                p = this.pathToNode(m);
-            else if( typeof(m)==='string' )
-                p = toPath(m);
-            else if( m instanceof Path )
-                p = m;
-            else
-                throw new Error(`unknown value ${m} in majors assignment`);
-            
-            this._majorPaths.push(p);
-        }
-    }
-    
-    get majors () { return this._majorPaths }
-    
-    hasMajorNode(node) {
-        var nodePath = this.pathToNode(node);
-        for( let mp of this._majorPaths )
-            if( nodePath.equals( mp ) ) {
-                return true;
-            }
-        return false;
-    }
-    
-    * iterTreeMajors () {
-        for( let c of this.iterTree({includeNonEnumerable:true}) ) {
-            if( this.hasMajorNode(c) )
-                yield c;
-        }
-    }
-
-    //////////////////////////////////////////////////////
     // merge this Branch with another
     //////////////////////////////////////////////////////
 
@@ -679,7 +578,7 @@ class ObjNode extends Node {
     }
     set mergeOpts (opts) { this._mergeOpts=opts }
 
-    _mergeTreeNodes(key, bc, ic, opts)
+    _mergeLeaf(key, bc, ic, opts)
     {
         if( !(bc instanceof TreeNode) )
             throw new Error(`When merging TreeNodes, both must be TreeNode instances. ${bc.fullName} is not a TreeNode.`);
@@ -718,34 +617,6 @@ class ObjNode extends Node {
                 throw new Error(`tree merge failed at ${ic.fullName}: both nodes are non-input leaf nodes`);
             bc.absorbHandles(ic);
             ic.safeDestroy();
-        }
-    }
-
-    _mergeLeaf(key, bc, ic, opts)
-    {
-        if( bc instanceof TreeNode || ic instanceof TreeNode ) {
-            this._mergeTreeNodes(key, bc, ic, opts);
-        } else if( bc instanceof InputNode && ic instanceof InputNode ) {
-            //console.log(`${ic.fullName}: ok. both inputs. keep bc`);
-        }
-        else if( bc instanceof InputNode && ! (ic instanceof InputNode) ) 
-        {
-            //console.log(`${ic.fullName}: ok. bc input, ic not. replace bc with ic`);
-            // discard our version of the child
-            this.detachChild(key);
-            // adopt inc's version of the child
-            ic.detachParent();
-            this.addc(key, ic);
-        }
-        else if( ! (bc instanceof InputNode) && ic instanceof InputNode )
-        {
-            //console.log(`${ic.fullName}: ok. bc non-input, ic input. ignore ic.`);
-        }
-        else 
-        {
-            //console.log(`${ic.fullName}: FAIL. both are non-input leafs.`);
-            if( opts.leafConflict != 'keepBase' )
-                throw new Error(`tree merge failed at ${ic.fullName}: both nodes are non-input leaf nodes`);
         }
     }
 
@@ -789,7 +660,6 @@ class ObjNode extends Node {
                     //console.log(`${ic.fullName}: ok: both branches. recurse.`);
                     for( let sk of ic.getSliderKeys() )
                         bc.addSliderKey(sk);
-                    bc.majors = bc.majors.concat(ic.majors);
                     bc.merge(ic, opts);
                 }
                 else if( bc.isBranch && ic.isLeaf ) 
@@ -812,25 +682,9 @@ class ObjNode extends Node {
     // manage my InputNode children
     //////////////////////////////////////////////////////
     
-    treeInputMap(srcBranch) {
-        for( let i of this.iterTreeInputUnlinked() ) {
-            let basePath = i.pathToNode(srcBranch);
-            let endPath = this.pathToNode(i);
-            let fullPath = basePath.concat(endPath);
-            i.linkToPath(fullPath);
-        }
-    }
-    
     applyInput(input, init) {
         var unused = Object.assign({},input);
         for( let k of allOwnKeys(input) ) {
-            if( this.hasUnlinkedInputWithKey(k) ) {
-                if( init ) {
-                    this._inputs[k].initValue( true, input[k] );
-                } else
-                    this._inputs[k].setValue( input[k] );
-                delete unused[k];
-            }
             if( this.hasc(k) && this.getc(k).settable ) {
                 this.getc(k).setValue( input[k] );
             }
@@ -852,8 +706,6 @@ class ObjNode extends Node {
     *iterChildren () {
         for( let n of allOwnValues(this._subs) )
             yield n;
-        for( let n of allOwnValues(this._inputs) )
-            yield n;
         for( let n of allOwnValues(this._computes) )
             yield n;
     }
@@ -870,23 +722,8 @@ class ObjNode extends Node {
         }
     }
     
-    *iterInputChildren () {
-        for( let n of allOwnValues(this._inputs) ) {
-            yield n
-        }
-    }
-
-    *iterUnlinkedInputChildren () {
-        for( let n of allOwnValues(this._inputs) ) {
-            if( ! n.isLinked )
-                yield n;
-        }
-    }
-
     *iterLeafChildren () {
         for( let n of this.iterComputeChildren() )
-            yield n;
-        for( let n of this.iterInputChildren() )
             yield n;
     }
 
@@ -950,37 +787,6 @@ class ObjNode extends Node {
         
     }
     
-    * iterTreeInput(opts) {
-        if( typeof(opts)=='object' ) {
-            if( ! opts.hasOwnProperty('includeNonEnumerable') )
-                opts.includeNonEnumerable = false;
-        } else
-            opts = {
-                includeNonEnumerable: false,
-            }
-        
-        for( let n of this.iterTree(opts) )
-            //if( n.nodeType=='input' )
-            if( n instanceof InputNode )
-                yield n;
-    }
-
-    * iterTreeInputUnlinked(opts) {
-        if( typeof(opts)=='object' ) {
-            if( ! opts.hasOwnProperty('includeNonEnumerable') )
-                opts.includeNonEnumerable = false;
-        } else
-            opts = {
-                includeNonEnumerable: false,
-            }
-        
-        for( let n of this.iterTree(opts) ) {
-            //if( n.nodeType=='input' )
-            if( n instanceof InputNode && ! n.isLinked )
-                yield n;
-        }
-    }
-
     * iterTree(opts) {
         if( typeof(opts)=='object' ) {
             if( ! opts.hasOwnProperty('includeNonEnumerable') )

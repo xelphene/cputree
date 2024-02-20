@@ -11,19 +11,13 @@ exports.node = require('./node');
 exports.ObjNode = exports.node.ObjNode;
 exports.BaseComputeNode = exports.node.BaseComputeNode;
 //exports.ComputeNode = exports.node.ComputeNode;
-exports.InputNode = exports.node.InputNode;
 exports.BranchNode = exports.node.BranchNode;
 exports.LeafNode = exports.node.LeafNode;
 exports.MapNode = exports.node.MapNode;
 exports.GetSetNode = exports.node.GetSetNode;
 
-exports.tmpl = require('./tmpl/index');
-exports.conProxyUnwrap = require('./tmpl/unwrap').conProxyUnwrap;
-
 exports.CTL = require('./consts').CTL;
 exports.enumerable = require('./consts').enumerable;
-exports.MAJORS = require('./consts').MAJORS;
-exports.C = require('./consts').C;
 exports.N = require('./consts').N;
 exports.O = require('./consts').O;
 
