@@ -76,6 +76,7 @@ class LeafNode extends Node {
     _unlistenAllHandles() {
         for( let n of this._listeningToHandles )
             n.delChangeListener(this);
+        this._listeningToHandles = new Set();
     }
 
     get hearingFrom    () { return [...this._listeningTo]; }

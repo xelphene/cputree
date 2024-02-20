@@ -33,8 +33,6 @@ class TreeNode extends LeafNode {
         if( ! newNode.isRoot )
             throw new Error('newNode is already in a tree');
         
-        this._unlistenAllHandles(); // TODO: test this
-        
         newNode.absorbHandles(this);
         
         if( ! this.isRoot ) {
@@ -42,6 +40,20 @@ class TreeNode extends LeafNode {
             const parent = this.detachParent();
             parent.addc(key, newNode);
         }
+        
+        this.safeDestroy();
+    }
+    
+    safeDestroy() {
+        if( this._handle !== null )
+            throw new Error(`safeDestroy called on a Node which still has a primary Handle`);
+        if( this._auxHandles.length != 0 )
+            throw new Error(`safeDestroy called on a Node which still has ${this._auxHandles.length} aux Handles`);
+
+        if( ! this.isRoot )
+            this.detachParent();
+        
+        this._unlistenAllHandles();
     }
 };
 exports.TreeNode = TreeNode;

@@ -741,8 +741,7 @@ class ObjNode extends Node {
         {
             //console.log(`${ic.fullName}: ok. both inputs. keep bc`);
             bc.absorbHandles(ic);
-            ic.detachParent();
-            ic._unlistenAllHandles(); // TODO
+            ic.safeDestroy();
         }
         else if( (bc instanceof TInputNode) && !(ic instanceof TInputNode) )
         {
@@ -753,14 +752,13 @@ class ObjNode extends Node {
             ic.detachParent();
             this.addc(key, ic);
             ic.absorbHandles(bc);
-            bc._unlistenAllHandles(); // TODO
+            bc.safeDestroy();
         }
         else if( !(bc instanceof TInputNode) && (ic instanceof TInputNode) )
         {
             //console.log(`${ic.fullName}: ok. bc non-input, ic input. keep bc.`);
             bc.absorbHandles(ic);
-            ic.detachParent();
-            ic._unlistenAllHandles(); // TODO
+            ic.safeDestroy();
         }
         else 
         {
@@ -768,8 +766,7 @@ class ObjNode extends Node {
             if( opts.leafConflict != 'keepBase' )
                 throw new Error(`tree merge failed at ${ic.fullName}: both nodes are non-input leaf nodes`);
             bc.absorbHandles(ic);
-            ic.detachParent();
-            ic._unlistenAllHandles(); // TODO
+            ic.safeDestroy();
         }
     }
 
