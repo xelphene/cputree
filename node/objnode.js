@@ -199,20 +199,20 @@ class ObjNode extends Node {
             if( c instanceof TreeNode ) {
                 if( c.settable )
                     Object.defineProperty(this._o, c.key, {
-                        get: () => c.value,
+                        get: () => c.getValue(),
                         set: v  => { c.setValue(v) },
                         enumerable: c.enumerable,
                         configurable: false,
                     });
                 else
                     Object.defineProperty(this._o, c.key, {
-                        get: () => c.value,
+                        get: () => c.getValue(),
                         enumerable: c.enumerable,
                         configurable: false,
                     });
             } else
                 Object.defineProperty(this._o, c.key, {
-                    get: () => c.value,
+                    get: () => c.getValue(),
                     enumerable: c.enumerable,
                     configurable: false,
                 });
