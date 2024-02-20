@@ -31,8 +31,6 @@ exports.nset = require('./consts').nset;
 exports.excOriginNode = require('./consts').excOriginNode;
 exports.excTopNode = require('./consts').excTopNode;
 
-exports.applyInput = require('./applyinput').applyInput;
-
 // mio
 exports.mioSrcBranch = require('./consts').mioSrcBranch;
 exports.mioMapIn = require('./consts').mioMapIn;
@@ -44,5 +42,7 @@ exports.Path = require('./path').Path;
 exports.inpn = require('./inpn');
 exports.errors = require('./errors');
 
-exports.listen = require('./nodeop').listen;
-
+exports.input = require('./tbuild/tinput');
+exports.tbuild = require('./tbuild/');
+exports.unwrap = require('./tbuild/util').unwrap;
+exports.validate = require('./validate');
