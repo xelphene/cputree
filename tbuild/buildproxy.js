@@ -145,13 +145,8 @@ class BuildProxy
             return true;
         }
         
-        if( v instanceof TreeFiller ) {
-            if( o.hasc(key) )
-                o.del(key);
-            this.log(`tree fill ${v.name}`);
-            v.fill(o, key, this.bindings);
-            return true;
-        }
+        if( v instanceof TreeFiller )
+            return this.assignTreeFiller(o, key, v);
         
         if( v instanceof ObjNode || v instanceof LeafNode ) {
             if( o.hasc(key) )
@@ -211,6 +206,9 @@ class BuildProxy
             return true;
         }
         
+        if( v instanceof TreeFiller )
+            return this.assignTreeFiller(o, key, v);
+        
         // LHS = settable. RHS = PotentialNode
         // create a similar node (i.e. an Input) at RHS
         // make LHS relay *from* it        
@@ -221,9 +219,31 @@ class BuildProxy
             return true;
         }
         
+        console.log(v);
         throw new Error(`[settable] = [?]: RHS is unknown.`);
     }
     
+    assignTreeFiller(o, key, treeFiller)
+    {
+        if( o.hasc(key) && o.getc(key) instanceof LeafNode ) {
+            // LHS is a Leaf. ensure RHS is also.
+            if( ! treeFiller.willFillLeaf )
+                throw new Error(`[LeafNode] = [non-Leaf-producing TreeFiller]: LHS and RHS must be a LeafNodes`);
+
+            let oldNode = o.delc(key);
+            treeFiller.fill(o, key, this.bindings);
+            o.getc(key).absorbHandles(oldNode);
+            oldNode.safeDestroy();
+        } else if( o.hasc(key) ) {
+            // LHS is branch. just delete and replace.
+            o.delc(key);
+            treeFiller.fill(o, key, this.bindings);
+        } else {
+            // LHS does not exist
+            treeFiller.fill(o, key, this.bindings);
+        }
+        return true;
+    }
 }
 exports.BuildProxy = BuildProxy;
 
