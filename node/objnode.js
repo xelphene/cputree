@@ -19,7 +19,6 @@ const getDTProxyHandler = require('./sproxy').getDTProxyHandler;
 const {allOwnKeys, allOwnValues} = require('../util');
 const {toPath, Path} = require('../path');
 const NavError = require('../errors').NavError;
-const GetSetNode = require('./getset').GetSetNode;
 const {ObjHandle} = require('./handle');
 const {TreeNode} = require('./treenode');
 const {TInputNode} = require('./tinput');
@@ -86,7 +85,6 @@ class ObjNode extends Node {
     get BranchNodeClass  () { return ObjNode }
     get MapNodeClass     () { return MapNode }
     //get PostValidateComputeClass () { return PostValidateComputeNode }
-    get GetSetNodeClass  () { return GetSetNode }
     get TGetSetNodeClass () { return require('./tgetset').TGetSetNode }
 
     get debugValue () {
@@ -118,8 +116,7 @@ class ObjNode extends Node {
             throw new Error('finalizeEntireTree() should only be called from the root node');
         
         // all parent links are set
-        // all ObjNode, InputNode and GetSetNode are added
-        // MapNode children can now be set up.
+        // all Nodes are added
         if( ! this.root.definitionFinalized )
             this.finalizeDefinition();
         
@@ -206,7 +203,7 @@ class ObjNode extends Node {
         
         for( let c of this.iterComputeChildren() )
         {
-            if( c instanceof GetSetNode || c instanceof TreeNode ) {
+            if( c instanceof TreeNode ) {
                 if( c.settable )
                     Object.defineProperty(this._o, c.key, {
                         get: () => c.value,
@@ -255,15 +252,12 @@ class ObjNode extends Node {
             this._subs.hasOwnProperty(key)
         )
     }
+    hasLeafWithKey (key) {
+        return this._computes.hasOwnProperty(key)
+    }
     //hasComputeWithKey (key) { return this._computes.hasOwnProperty(key) }
-    hasGetSetWithKey (key) { return this._computes.hasOwnProperty(key) }
     hasObjWithKey     (key) { return this._subs.hasOwnProperty(key) }
     hasBranchWithKey  (key) { return this.hasObjWithKey(key) }
-    hasLeafWithKey    (key) {
-        return (
-            this.hasGetSetWithKey(key)
-        )
-    }
     
     get hasChildren () { return this._childKeysInAddedOrder.length!=0 }
 
@@ -360,12 +354,6 @@ class ObjNode extends Node {
     //addCompute(key, computeFunc) {
     //    return this.add( key, new this.ComputeNodeClass({computeFunc}) );
     //}
-    
-    addGetSet(key, getter, setter) {
-        return this.add( key, new this.GetSetNodeClass({
-            getter, setter
-        }));
-    }
     
     add(key, node) 
     {
