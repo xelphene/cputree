@@ -66,6 +66,11 @@ class MapFuncBuilder extends TreeFiller
             if( this._graft ) {
                 this.dst.addc(mioSrcBranch, this.src);
                 this.dst.getc(mioSrcBranch).enumerable = false;
+                
+                // TODO: if we're grafting, then we're *encapsulating*
+                // mioSrcBranch.
+                // make every TInputNode in mioSrcBranch relay
+                // FROM the new TMapBoundNodes we create
             }
         }
         
