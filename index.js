@@ -37,7 +37,6 @@ exports.applyInput = require('./applyinput').applyInput;
 exports.mioSrcBranch = require('./consts').mioSrcBranch;
 exports.mioMapIn = require('./consts').mioMapIn;
 exports.mioMapOut = require('./consts').mioMapOut;
-exports.mio = require('./mio');
 
 exports.toPath = require('./path').toPath;
 exports.Path = require('./path').Path;
