@@ -90,7 +90,9 @@ class MapFuncBuilder extends TreeFiller
             );
             
             if( this.replaceSrcInputs && srcNode instanceof TInputNode ) {
-                let dstNode = new TInputNode({});
+                let dstNode = new TInputNode({
+                    validate: srcNode.validate
+                });
                 this.dst.addNodeAtPath( dstPath, dstNode );
 
                 let srcNodeNew = new TMapBoundNode({
