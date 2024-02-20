@@ -21,8 +21,6 @@ const {allOwnKeys, allOwnValues} = require('../util');
 const {toPath, Path} = require('../path');
 const NavError = require('../errors').NavError;
 const GetSetNode = require('./getset').GetSetNode;
-const TNode = require('./tnode').TNode;
-const {ZygoteNode}  =require('./zygote');
 const {ObjHandle} = require('./handle');
 const {TreeNode} = require('./treenode');
 const {TInputNode} = require('./tinput');
@@ -92,7 +90,6 @@ class ObjNode extends Node {
     get MapNodeClass     () { return MapNode }
     //get PostValidateComputeClass () { return PostValidateComputeNode }
     get GetSetNodeClass  () { return GetSetNode }
-    get TNodeClass       () { return TNode }
     get TGetSetNodeClass () { return require('./tgetset').TGetSetNode }
 
     get debugValue () {
@@ -234,7 +231,7 @@ class ObjNode extends Node {
         
         for( let c of this.iterComputeChildren() )
         {
-            if( c instanceof GetSetNode || c instanceof ZygoteNode || c instanceof TNode || c instanceof TreeNode ) {
+            if( c instanceof GetSetNode || c instanceof TreeNode ) {
                 if( c.settable )
                     Object.defineProperty(this._o, c.key, {
                         get: () => c.value,
@@ -436,9 +433,7 @@ class ObjNode extends Node {
         }
         else if( node instanceof BaseComputeNode )
             this._computes[key] = node;
-        else if( node instanceof ZygoteNode )
-            this._computes[key] = node;
-        else if( (node instanceof TNode) || (node instanceof TreeNode) )
+        else if( node instanceof TreeNode )
             this._computes[key] = node;
         else if( node instanceof InputNode )
             this._inputs[key] = node;
@@ -684,56 +679,12 @@ class ObjNode extends Node {
     }
     set mergeOpts (opts) { this._mergeOpts=opts }
 
-    _mergeTNodes(key, bc, ic, opts)
-    {
-        if( !(bc instanceof TNode) )
-            throw new Error(`When merging TNodes, both must be TNode instances. ${bc.fullName} is not a TNode.`);
-        if( !(ic instanceof TNode) )
-            throw new Error(`When merging TNodes, both must be TNode instances. ${ic.fullName} is not a TNode.`);
-
-        //console.log(`bc.isAnyInput=${bc.isAnyInput}  ic.isAnyInput=${ic.isAnyInput}`);
-         
-        if( bc.isAnyInput && ic.isAnyInput )
-        {
-            //console.log(`${ic.fullName}: ok. both inputs. keep bc`);
-            bc.absorbHandles(ic);
-            ic.detachParent();
-            ic.detachKernel();
-        }
-        else if( bc.isAnyInput && !ic.isAnyInput )
-        {
-            //console.log(`${ic.fullName}: ok. bc input, ic not. keep ic`);
-            // discard our version of the child
-            this.detachChild(key);
-            // adopt inc's version of the child
-            ic.detachParent();
-            this.addc(key, ic);
-            ic.absorbHandles(bc);
-        }
-        else if( !bc.isAnyInput && ic.isAnyInput )
-        {
-            //console.log(`${ic.fullName}: ok. bc non-input, ic input. keep bc.`);
-            bc.absorbHandles(ic);
-            ic.detachParent();
-            ic.detachKernel();
-        }
-        else 
-        {
-            //console.log(`${ic.fullName}: fail? both are non-input leafs.`);
-            if( opts.leafConflict != 'keepBase' )
-                throw new Error(`tree merge failed at ${ic.fullName}: both nodes are non-input leaf nodes`);
-            bc.absorbHandles(ic);
-            ic.detachParent();
-            ic.detachKernel();
-        }
-    }
-
     _mergeTreeNodes(key, bc, ic, opts)
     {
         if( !(bc instanceof TreeNode) )
-            throw new Error(`When merging TNodes, both must be TNode instances. ${bc.fullName} is not a TNode.`);
+            throw new Error(`When merging TreeNodes, both must be TreeNode instances. ${bc.fullName} is not a TreeNode.`);
         if( !(ic instanceof TreeNode) )
-            throw new Error(`When merging TNodes, both must be TNode instances. ${ic.fullName} is not a TNode.`);
+            throw new Error(`When merging TreeNodes, both must be TreeNode instances. ${ic.fullName} is not a TreeNode.`);
 
         //console.log(`${bc.fullName}  bc=${bc.constructor.name}  ic=${ic.constructor.name}`);
          
@@ -772,14 +723,7 @@ class ObjNode extends Node {
 
     _mergeLeaf(key, bc, ic, opts)
     {
-        if( bc instanceof TNode )
-            throw new Error(`${bc.fullName} is a TNode`);
-        if( ic instanceof TNode )
-            throw new Error(`${ic.fullName} is a TNode`);
-            
-        if( bc instanceof TNode || ic instanceof TNode ) {
-            this._mergeTNodes(key, bc, ic, opts);
-        } else if( bc instanceof TreeNode || ic instanceof TreeNode ) {
+        if( bc instanceof TreeNode || ic instanceof TreeNode ) {
             this._mergeTreeNodes(key, bc, ic, opts);
         } else if( bc instanceof InputNode && ic instanceof InputNode ) {
             //console.log(`${ic.fullName}: ok. both inputs. keep bc`);
@@ -887,10 +831,7 @@ class ObjNode extends Node {
                     this._inputs[k].setValue( input[k] );
                 delete unused[k];
             }
-            if( this.hasc(k) && (this.getc(k) instanceof TNode) && this.getc(k).settable ) {
-                this.getc(k).setValue( input[k] );
-            }
-            if( this.hasc(k) && (this.getc(k) instanceof TreeNode) && this.getc(k).settable ) {
+            if( this.hasc(k) && this.getc(k).settable ) {
                 this.getc(k).setValue( input[k] );
             }
             if( typeof(input[k])=='object' && this.hasObjWithKey(k) ) {

@@ -57,4 +57,3 @@ exports.errors = require('./errors');
 
 exports.listen = require('./nodeop').listen;
 
-exports.makeNode = require('./node/make').makeNode;

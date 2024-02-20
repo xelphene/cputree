@@ -44,7 +44,7 @@ class PotentialNode
             return this[pbParent].addBranch(this[pbKeyInParent]);
     }
     
-    // turn this PotentialNode into a real TNode with a GetSetKernel
+    // turn this PotentialNode into a real TGetSetNode
     // with dummy get/set funcs in it
     [pgsExist] () {
         if( this[pbParent] instanceof PotentialNode )

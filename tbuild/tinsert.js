@@ -2,7 +2,6 @@
 'use strict';
 
 const {unwrap, getTBProxyHandler} = require('./util');
-const {TNode} = require('../node/tnode');
 const {TInputNode} = require('../node/tinput');
 const {TreeFiller} = require('./fill');
 

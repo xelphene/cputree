@@ -2,7 +2,6 @@
 'use strict';
 
 const {ObjNode} = require('../node/objnode');
-const {TNode} = require('../node/tnode');
 const {TInputNode} = require('./tinput');
 const {TGetNode} = require('./tget');
 

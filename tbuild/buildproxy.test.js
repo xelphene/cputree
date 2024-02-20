@@ -2,7 +2,6 @@
 'use strict';
 
 const {N, TBProxyHandler, nget, nset} = require('../consts');
-const {TNode} = require('../node/tnode');
 const {tbuild, unwrap, tinsert, bexist, tinput} = require('../tbuild');
 const {BuildProxy} = require('./buildproxy');
 
