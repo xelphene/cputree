@@ -46,3 +46,4 @@ exports.input = require('./tbuild/tinput');
 exports.tbuild = require('./tbuild/');
 exports.unwrap = require('./tbuild/util').unwrap;
 exports.validate = require('./validate');
+exports.merge = require('./tbuild/util').merge;

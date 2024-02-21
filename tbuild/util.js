@@ -3,6 +3,7 @@
 
 const {N} = require('../consts');
 const {TBProxyHandler} = require('../consts');
+const {ObjNode} = require('../node/objnode');
 
 function unwrap (o) 
 {
@@ -29,3 +30,11 @@ function getTBProxyHandler(o) {
 }
 exports.getTBProxyHandler = getTBProxyHandler;
 
+function merge (base, inc, opts) {
+    base = unwrap(base);
+    inc = unwrap(inc);
+    if( ! (base instanceof ObjNode) )
+        throw new Error(`ObjNode instance required for base argument`);
+    base.merge(inc, opts);
+}
+exports.merge = merge;
