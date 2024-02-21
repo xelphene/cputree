@@ -206,10 +206,11 @@ class Node {
             maxNameLen = 50;
         
         for( let n of this.iterTree({includeNonEnumerable}) ) {
-            if( n.isLeaf || includeBranches )
+            if( n.isLeaf || includeBranches ) {
                 console.log( sprintf(`%-${maxNameLen}s`, n.fullName) );
-            for( let l of n.debugLines )
-                console.log( sprintf(`%-${maxNameLen}s %s`, '', l) );
+                for( let l of n.debugLines )
+                    console.log( sprintf(`%-${maxNameLen}s %s`, '', l) );
+            }
         }
     }
 
