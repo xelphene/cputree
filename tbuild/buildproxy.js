@@ -129,7 +129,7 @@ class BuildProxy
         this.log(`RHS: ${rhs.summary}`);
         
         // >>> assignToSettable
-        if( lhs.isInput && rhs.isLeaf ) {
+        if( lhs.isInput && rhs.isLeaf && rhs.isNodeInOurTree ) {
             o.getc(key).replaceWithRelay( rhs.value );
             return true;
         }
@@ -214,7 +214,7 @@ class BuildProxy
             throw new Error(`Invalid assignment: [existing branch] = [new leaf]`);
         
         if( lhs.isLeaf && rhs.isLeaf && ! rhs.isNodeInOurTree ) {
-            let oldNode = o.getc(key);
+            let oldNode = o.delc(key);
             o.add(key, rhs.value);
             o.getc(key).absorbHandles(oldNode);
             oldNode.safeDestroy();
@@ -226,7 +226,6 @@ class BuildProxy
             mapBi(rhs.value, x => x).fill(o, key, []);
             o.getc(key).absorbHandles(oldNode);
             oldNode.safeDestroy();
-            console.log('OKAY');
             return true;
         }
 

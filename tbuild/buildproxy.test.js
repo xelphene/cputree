@@ -299,3 +299,16 @@ test('tinput', () =>
     R.getc('j').setValue('z');
     expect( R.getc('j').getValue() ).toBe('z');
 });
+
+test('replace_tinput', () =>
+{
+    var R = tbuild();
+    
+    R.i = tinput.number();
+    R.i = tinput.string();
+    
+    R = unwrap(R);
+    R.init({i:'str'});
+    
+    R.logDebug();
+});
