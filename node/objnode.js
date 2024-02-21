@@ -18,6 +18,7 @@ const NavError = require('../errors').NavError;
 const {ObjHandle} = require('./handle');
 const {TreeNode} = require('./treenode');
 const {TInputNode} = require('./tinput');
+const {TreeFiller} = require('../tbuild/fill');
 
 class ObjNode extends Node {
     constructor({parent}) {
@@ -596,6 +597,10 @@ class ObjNode extends Node {
         if( typeof(incT)=='function' && incT.hasOwnProperty(bexpand) ) {
             incT(this);
             return;
+        }
+        
+        if( incT instanceof TreeFiller ) {
+            incT = incT.sprout();
         }
 
         this.absorbHandles(incT);

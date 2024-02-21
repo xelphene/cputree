@@ -25,7 +25,7 @@ class MapFuncBuilder extends TreeFiller
         
         this.dstParent = null;
         this.dstKey = null;
-        this.buildProxyBindings = null;
+        this._bindings = null;
         this.dst = null;
 
         this._graft = graft!==false;        
@@ -36,17 +36,39 @@ class MapFuncBuilder extends TreeFiller
     fill(dstParent, dstKey, buildProxyBindings) {
         this.dstParent = dstParent;
         this.dstKey = dstKey;
-        this.buildProxyBindings = buildProxyBindings;
+        this._bindings = buildProxyBindings;
         
-        if( this.src instanceof LeafNode ) 
+        if( this.src instanceof LeafNode ) {
             this._fillLeaf();
-        else
+            this.dst = this.dstParent.getc(this.dstKey);
+        } else {
+            this.dst = this.dstParent.addBranch(this.dstKey);
             this._fillBranch();
+        }
+    }
+    
+    sprout(bindings) {
+        if( bindings!==undefined )
+            this._bindings = bindings;
+        else
+            this._bindings = [];
+        if( this.src instanceof LeafNode ) {
+            this.dst = new TMapBoundNode({
+                bindings: this.mapFuncBindings,
+                mapGetFunc: this.mapGetFunc,
+                mapSetFunc: this.mapSetFunc,
+                srcNode: this.src
+            });
+        } else {
+            this.dst = new this.src.BranchNodeClass({});
+            this._fillBranch();
+        }
+        return this.dst;
     }
 
     get mapSetFunc      () { return this._mapSetFunc }
     get mapGetFunc      () { return this._mapGetFunc }
-    get mapFuncBindings () { return this.buildProxyBindings }
+    get mapFuncBindings () { return this._bindings }
     get replaceSrcInputs () { return false }
 
     _fillLeaf()
@@ -61,7 +83,7 @@ class MapFuncBuilder extends TreeFiller
     
     _fillBranch()
     {
-        this.dst = this.dstParent.addBranch(this.dstKey);
+        //this.dst = this.dstParent.addBranch(this.dstKey);
         if( this.src.isRoot ) {
             // this automatically grafts the src tree onto
             // dst[mioSrcBranch] if it is not a part of dst.  doesn't

@@ -2,6 +2,7 @@
 'use strict';
 
 const {tbuild, unwrap, tinsert, bexist} = require('../tbuild');
+beforeEach(() => { global.console = require('console'); });
 
 var R;
 
@@ -49,6 +50,30 @@ test('node_node', () => {
     R.init({});
 
     test_rest_leaf();
+});
+
+test('sprout_branch', () => {
+    var S = tinsert.powMap( R.o, R.pow ).sprout();
+    unwrap(R).init({});
+    
+    expect( S.nav('i').getValue() ).toBe( 2000 );
+    expect( S.nav('f').getValue() ).toBe( 4000 );
+    
+    unwrap(R).nav('pow').setValue( 2 );
+    
+    expect( S.nav('i').getValue() ).toBe( 200 );
+    expect( S.nav('f').getValue() ).toBe( 400 );
+});
+
+test('sprout_leaf', () => {
+    var S = tinsert.powMap( R.o.i, R.pow ).sprout();
+    unwrap(R).init({});
+    
+    expect( S.getValue() ).toBe( 2000 );
+    
+    unwrap(R).nav('pow').setValue( 2 );
+    
+    expect( S.getValue() ).toBe( 200 );
 });
 
 function test_rest_leaf () {
