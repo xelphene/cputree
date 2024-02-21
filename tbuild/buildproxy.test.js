@@ -309,6 +309,4 @@ test('replace_tinput', () =>
     
     R = unwrap(R);
     R.init({i:'str'});
-    
-    R.logDebug();
 });
