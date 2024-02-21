@@ -266,6 +266,7 @@ test('potn_create_getset_no_set', () =>
     expect( () => R.nav('o.gs').setValue( 300 ) )
         .toThrow("a TGetSetNode was created at ☉.o.gs, but it's setFunc was not assigned");
 });
+
 test('potn_create_getset_no_get', () =>
 {
     var R = tbuild();

@@ -101,6 +101,9 @@ const PotentialNodeProxyHandler =
         if( [C, N].includes(key) )
             throw new Error(`attempt to get special key ${key.toString()} on a PotentialNode ${o[potnPathFromRoot]} via Proxy`);
         
+        if( key==='hasOwnProperty' )
+            return k => o.hasOwnProperty(k);
+        
         if( [potnPathFromRoot, 'constructor'].includes(key) )
             return Reflect.get(o, key);
         

@@ -12,6 +12,7 @@ const {unwrap} = require('./util');
 const {mapBi} = require('./map');
 const {TreeFiller} = require('./fill');
 const { getPotentialNodeProxy, PotentialNode } = require('./potn');
+const {RHSWrapper, LHSWrapper} = require('./hswrapper');
 
 function makeHasOwnProperty(o) {
     return prop => (
@@ -121,131 +122,160 @@ class BuildProxy
     set (o, key, v) {
         this.logPrefix = `BP ${o.fullName} SET ${key.toString()}`;
         
-        // if LHS is a settable, treat specially. don't overwrite.
-        if( o.hasc(key) && o.getc(key).settable )
-            return this.assignToSettable(o, key, v);
-        
-        if( v instanceof PotentialNode ) {
-            if( ! o.hasc(key) )
-                // neither LHS nor RHS exist. no-op.
-                return true
-            else
-                throw new Error(`Cannot assign [non-settable existing node] = [potential node]`);
-        }
-        
-        if( typeof(v)=='function' ) {
-            this.log(`new getter`);
-            let tgetnode = new TGetNode({
-                bindings: this._bindings,
-                getFunc: v
-            });
-            if( o.hasc(key) ) {
-                tgetnode.absorbHandles(o.getc(key));
-                o.getc(key).safeDestroy();
-                //o.del(key);
-            }
-            o.addc(key, tgetnode);
-            return true;
-        }
-        
-        if( v instanceof TreeFiller )
-            return this.assignTreeFiller(o, key, v);
-        
-        if( v instanceof ObjNode || v instanceof LeafNode ) {
-            if( o.hasc(key) )
-                o.del(key);
+        const lhs = new LHSWrapper(o, key);
+        const rhs = new RHSWrapper(o, key, unwrap(v));
 
-            v = unwrap(v);
-            
-            if( o.root.treeHasNode(v) ) {
-                this.log(`map from within tree`);
-                mapBi(v, x => x).fill(o, key, []);
-            } else {
-                this.log(`graft separate tree`);
-                o.add(key, v);
-            }
-            
+        this.log(`LHS: ${lhs.summary}`);
+        this.log(`RHS: ${rhs.summary}`);
+        
+        // >>> assignToSettable
+        if( lhs.isInput && rhs.isLeaf ) {
+            o.getc(key).replaceWithRelay( rhs.value );
             return true;
         }
         
-        if( v===bexist ) {
-            if( o.hasNodeWithKey(key) ) {
-                if( o.getProp(key) instanceof ObjNode )
-                    return true
-                else 
-                    throw new Error(`A non-branch node already exists at ${o.getProp(key).fullName}`);
-            } else {
-                o.add(key, new o.constructor({}));
-                return true;
-            }
-        }
-        
-        throw new Error(`${this.logPrefix}: unknown set op`);
-    }
-    
-    assignToSettable(o, key, v)
-    {
-        // TODO:
-        // if LHS is a settable TMapBoundNode which has some input pointing at it
-        
-        //if( ! o.getc(key).canRelayInput )
-        //    throw new Error(`[non-relay-capable settable] = [leaf]: LHS is settable but cannot relay`);
-        if( ! (o.getc(key) instanceof TInputNode) )
-             throw new Error(`[non-TInputNode] = [leaf]: LHS is settable but is not an Input that can be converted to relay`);
-        
-        if( v instanceof LeafNode ) {
-            //o.getc(key).relayInput( v );
-            o.getc(key).replaceWithRelay( v );
-            return true;
-        }
-        
-        if( typeof(v)=='function' ) {
+        if( lhs.isInput && rhs.isFunction ) {
             let an = new TGetNode({
                 bindings: this.bindings,
-                getFunc: v
+                getFunc: rhs.value
             });
             //o.getc(key).relayInput(an);
             o.getc(key).replaceWithRelay( an );
             return true;
         }
         
-        if( v instanceof TreeFiller )
-            return this.assignTreeFiller(o, key, v);
-        
         // LHS = settable. RHS = PotentialNode
         // create a similar node (i.e. an Input) at RHS
-        // make LHS relay *from* it        
-        if( v instanceof PotentialNode ) {
-            let rhsNode = o.root.addp( v[potnPathFromRoot], o.getc(key).copyNode() );
-            //o.getc(key).relayInput( rhsNode );
+        // make LHS relay *from* it
+        if( lhs.isInput && rhs.isPotential ) {
+            let rhsNode = o.root.addp(
+                rhs.value[potnPathFromRoot],
+                o.getc(key).copyNode()
+            );
             o.getc(key).replaceWithRelay( rhsNode );
             return true;
         }
         
-        console.log(v);
-        throw new Error(`[settable] = [?]: RHS is unknown.`);
-    }
-    
-    assignTreeFiller(o, key, treeFiller)
-    {
-        if( o.hasc(key) && o.getc(key) instanceof LeafNode ) {
-            // LHS is a Leaf. ensure RHS is also.
-            if( ! treeFiller.willFillLeaf )
+        if( lhs.isLeaf && rhs.isTreeFiller ) {
+            if( ! rhs.value.willFillLeaf )
                 throw new Error(`[LeafNode] = [non-Leaf-producing TreeFiller]: LHS and RHS must be a LeafNodes`);
-
             let oldNode = o.delc(key);
-            treeFiller.fill(o, key, this.bindings);
+            rhs.value.fill(o, key, this.bindings);
             o.getc(key).absorbHandles(oldNode);
             oldNode.safeDestroy();
-        } else if( o.hasc(key) ) {
+            return true;
+        }
+        
+        if( lhs.isBranch && rhs.isTreeFiller ) {
             // LHS is branch. just delete and replace.
             o.delc(key);
-            treeFiller.fill(o, key, this.bindings);
-        } else {
-            // LHS does not exist
-            treeFiller.fill(o, key, this.bindings);
+            rhs.value.fill(o, key, this.bindings);
+            return true;
         }
-        return true;
+        
+        if( ! lhs.exists && rhs.isTreeFiller ) {
+            // LHS does not exist
+            rhs.value.fill(o, key, this.bindings);
+            return true;
+        }
+        // <<< assignToSettable
+        
+        
+        if( ! lhs.exists && rhs.value instanceof PotentialNode )
+            // neither LHS nor RHS exist. no-op.
+            return true
+        
+        if( ! lhs.isSettableNode && rhs.value instanceof PotentialNode ) {
+            throw new Error(`Cannot assign [non-settable existing node] = [potential node]`);
+        }
+        
+        if( lhs.isLeaf && typeof(rhs.value)=='function' ) {
+            let tgetnode = new TGetNode({
+                bindings: this._bindings,
+                getFunc: rhs.value
+            });
+            tgetnode.absorbHandles(o.getc(key));
+            o.getc(key).safeDestroy();
+            o.addc(key, tgetnode);
+            return true;
+        }
+        
+        if( ! lhs.exists && typeof(rhs.value)=='function' ) {
+            this.log(`new getter`);
+            let tgetnode = new TGetNode({
+                bindings: this._bindings,
+                getFunc: rhs.value
+            });
+            o.addc(key, tgetnode);
+            return true;
+        }
+
+        if( lhs.isBranch && rhs.isLeaf )
+            throw new Error(`Invalid assignment: [existing branch] = [new leaf]`);
+        
+        if( lhs.isLeaf && rhs.isLeaf && ! rhs.isNodeInOurTree ) {
+            let oldNode = o.getc(key);
+            o.add(key, rhs.value);
+            o.getc(key).absorbHandles(oldNode);
+            oldNode.safeDestroy();
+            return true;
+        }
+        
+        if( lhs.isLeaf && rhs.isLeaf && rhs.isNodeInOurTree ) {
+            let oldNode = o.delc(key);
+            mapBi(rhs.value, x => x).fill(o, key, []);
+            o.getc(key).absorbHandles(oldNode);
+            oldNode.safeDestroy();
+            console.log('OKAY');
+            return true;
+        }
+
+        if( ! lhs.exists && rhs.isLeaf && rhs.isNodeInOurTree ) {
+            mapBi(rhs.value, x => x).fill(o, key, []);
+            return true;
+        }
+        
+        if( ! lhs.exists && rhs.isLeaf && ! rhs.isNodeInOurTree ) {
+            o.add(key, rhs.value);
+            return true;
+        }
+
+        if( lhs.isBranch && rhs.isBranch && rhs.isNodeInOurTree ) {
+            o.del(key);
+            mapBi(rhs.value, x => x).fill(o, key, []);
+            return true;
+        }
+
+        if( lhs.isBranch && rhs.isBranch && ! rhs.isNodeInOurTree ) {
+            o.del(key);
+            o.add(key, rhs.value);
+            return true;
+        }
+        
+        if( ! lhs.exists && rhs.isBranch && rhs.isNodeInOurTree ) {
+            mapBi(rhs.value, x => x).fill(o, key, []);
+            return true;
+        }
+        
+        if( ! lhs.exists && rhs.isBranch && ! rhs.isNodeInOurTree ) {
+            o.add(key, rhs.value);
+            return true;
+        }
+
+        // assignment of symbol bexist
+
+        if( lhs.isBranch && rhs.isBexist )
+            return true; // no-op
+        
+        if( lhs.isLeaf && rhs.isBexist )
+            throw new Error(`A non-branch node already exists at ${o.getProp(key).fullName}`);
+        
+        if( ! lhs.exists && rhs.isBexist ) {
+            o.add(key, new o.constructor({}));
+            return true;
+        }
+        
+        throw new Error(`${this.logPrefix}: unknown set op`);
     }
 }
 exports.BuildProxy = BuildProxy;

@@ -1,6 +1,7 @@
 
 'use strict';
 
+exports.Node = require('./node').Node;
 exports.ObjNode = require('./objnode').ObjNode;
 exports.LeafNode = require('./leaf').LeafNode;
 
