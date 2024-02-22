@@ -9,7 +9,7 @@ const {
 const tinsert = require('./tinsert');
 const {MapFuncBuilder} = require('./map');
 const {unwrap} = require('./util');
-const {mapBi} = require('./map');
+const {mapSym} = require('./map');
 const {TreeFiller} = require('./fill');
 const { getPotentialNodeProxy, PotentialNode } = require('./potn');
 const {RHSWrapper, LHSWrapper} = require('./hswrapper');
@@ -223,14 +223,14 @@ class BuildProxy
         
         if( lhs.isLeaf && rhs.isLeaf && rhs.isNodeInOurTree ) {
             let oldNode = o.delc(key);
-            mapBi(rhs.value, x => x).fill(o, key, []);
+            mapSym(rhs.value, x => x).fill(o, key, []);
             o.getc(key).absorbHandles(oldNode);
             oldNode.safeDestroy();
             return true;
         }
 
         if( ! lhs.exists && rhs.isLeaf && rhs.isNodeInOurTree ) {
-            mapBi(rhs.value, x => x).fill(o, key, []);
+            mapSym(rhs.value, x => x).fill(o, key, []);
             return true;
         }
         
@@ -241,7 +241,7 @@ class BuildProxy
 
         if( lhs.isBranch && rhs.isBranch && rhs.isNodeInOurTree ) {
             o.del(key);
-            mapBi(rhs.value, x => x).fill(o, key, []);
+            mapSym(rhs.value, x => x).fill(o, key, []);
             return true;
         }
 
@@ -252,7 +252,7 @@ class BuildProxy
         }
         
         if( ! lhs.exists && rhs.isBranch && rhs.isNodeInOurTree ) {
-            mapBi(rhs.value, x => x).fill(o, key, []);
+            mapSym(rhs.value, x => x).fill(o, key, []);
             return true;
         }
         

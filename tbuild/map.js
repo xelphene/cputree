@@ -13,22 +13,23 @@ const {TreeFiller} = require('./fill');
 
 class MapFuncBuilder extends TreeFiller
 {
-    constructor({src, mapGetFunc, mapSetFunc, graft}) {
+    constructor({src, mapSrcToDst, mapDstToSrc, graft, replaceSrcInputs}) {
         super();
         src = unwrap(src);
         this.src = src;
 
         // may be null, in which case child classes will
-        // override the mapFunc getter
-        this._mapGetFunc = mapGetFunc;
-        this._mapSetFunc = mapSetFunc;
+        // override the getter
+        this._mapSrcToDst = mapSrcToDst;
+        this._mapDstToSrc = mapDstToSrc;
         
         this.dstParent = null;
         this.dstKey = null;
         this._bindings = null;
         this.dst = null;
 
-        this._graft = graft!==false;        
+        this._graft = graft!==false;
+        this._replaceSrcInputs = replaceSrcInputs;
     }
     
     get willFillLeaf () { return this.src instanceof LeafNode }
@@ -37,6 +38,7 @@ class MapFuncBuilder extends TreeFiller
         this.dstParent = dstParent;
         this.dstKey = dstKey;
         this._bindings = buildProxyBindings;
+        this.srcInSameTree = this.dstParent.inSameTree(this.src);
         
         if( this.src instanceof LeafNode ) {
             this._fillLeaf();
@@ -46,8 +48,18 @@ class MapFuncBuilder extends TreeFiller
             this._fillBranch();
         }
     }
+
+    sproutForMergeTemp(bindings) {
+        this.srcInSameTree = true;
+        return this._sprout(bindings);
+    }
     
     sprout(bindings) {
+        this.srcInSameTree = false;
+        return this._sprout(bindings);
+    }
+    
+    _sprout(bindings) {
         if( bindings!==undefined )
             this._bindings = bindings;
         else
@@ -55,8 +67,8 @@ class MapFuncBuilder extends TreeFiller
         if( this.src instanceof LeafNode ) {
             this.dst = new TMapBoundNode({
                 bindings: this.mapFuncBindings,
-                mapGetFunc: this.mapGetFunc,
-                mapSetFunc: this.mapSetFunc,
+                mapGetFunc: this.mapSrcToDst,
+                mapSetFunc: this.mapDstToSrc,
                 srcNode: this.src
             });
         } else {
@@ -65,18 +77,24 @@ class MapFuncBuilder extends TreeFiller
         }
         return this.dst;
     }
-
-    get mapSetFunc      () { return this._mapSetFunc }
-    get mapGetFunc      () { return this._mapGetFunc }
+    
+    get mapSrcToDst () { return this._mapSrcToDst }
+    get mapDstToSrc () { return this._mapDstToSrc }
     get mapFuncBindings () { return this._bindings }
-    get replaceSrcInputs () { return false }
+    
+    get replaceSrcInputs () {
+        if( this._replaceSrcInputs !== undefined )
+            return this._replaceSrcInputs;
+        else
+            return ! this.srcInSameTree;
+    }
 
     _fillLeaf()
     {
         this.dstParent.addc(this.dstKey, new TMapBoundNode({
             bindings: this.mapFuncBindings,
-            mapGetFunc: this.mapGetFunc,
-            mapSetFunc: this.mapSetFunc,
+            mapGetFunc: this.mapSrcToDst,
+            mapSetFunc: this.mapDstToSrc,
             srcNode: this.src
         }));
     }
@@ -119,16 +137,16 @@ class MapFuncBuilder extends TreeFiller
 
                 let srcNodeNew = new TMapBoundNode({
                     bindings: this.mapFuncBindings,
-                    mapGetFunc: this.mapGetFunc, 
-                    mapSetFunc: this.mapSetFunc,
+                    mapGetFunc: this.mapDstToSrc, 
+                    mapSetFunc: this.mapSrcToDst,
                     srcNode: dstNode
                 });
                 srcNode.replace(srcNodeNew);
             } else {
                 let dstNode = new TMapBoundNode({
                     bindings: this.mapFuncBindings,
-                    mapGetFunc: this.mapGetFunc, 
-                    mapSetFunc: this.mapSetFunc,
+                    mapGetFunc: this.mapSrcToDst, 
+                    mapSetFunc: this.mapDstToSrc,
                     srcNode
                 });
                 this.dst.addNodeAtPath( dstPath, dstNode );
@@ -138,6 +156,7 @@ class MapFuncBuilder extends TreeFiller
 }
 exports.MapFuncBuilder = MapFuncBuilder;
 
+/*k
 function map(src, mapFunc, opts)
 {
     if( opts===undefined ) opts = {};
@@ -152,7 +171,7 @@ function map(src, mapFunc, opts)
 }
 exports.map = map;
 
-function mapBi(src, mapFunc, mapSetFunc, opts)
+function mapBi(src, mapSrcToDst, mapDstToSrc, opts)
 {
     if( opts===undefined ) opts = {};
     if( opts.graft === undefined ) opts.graft = true;
@@ -160,8 +179,8 @@ function mapBi(src, mapFunc, mapSetFunc, opts)
     if( typeof(mapFunc)=='function' && mapSetFunc===undefined )
         return new MapFuncBuilder({
             src,
-            mapGetFunc: mapFunc,
-            mapSetFunc: mapFunc,
+            mapSrcToDst: mapSrcToDst,
+            mapDstToSrc: mapFunc,
             graft: opts.graft,
         });
     else if( typeof(mapFunc)=='function' && typeof(mapSetFunc)=='function' )
@@ -176,3 +195,22 @@ function mapBi(src, mapFunc, mapSetFunc, opts)
         
 }
 exports.mapBi = mapBi;
+
+
+*/
+
+function mapSym(src, mapFunc, opts)
+{
+    if( opts===undefined ) opts = {};
+    if( opts.graft === undefined ) opts.graft = true;
+
+    return new MapFuncBuilder({
+        src,
+        mapSrcToDst: mapFunc,
+        mapDstToSrc: mapFunc,
+        graft: opts.graft,
+    });
+}
+exports.mapSym = mapSym;
+
+

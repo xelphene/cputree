@@ -13,21 +13,21 @@ class PowMapNodeBuilder extends MapFuncBuilder
     }
     
     get mapFuncBindings () { return [this.pow] }
-    get mapGetFunc      () { return (p,v) => v * 10**p }
-    get mapSetFunc      () { return (p,v) => v / 10**p }
+    get mapSrcToDst     () { return (p,v) => v * 10**p }
+    get mapDstToSrc     () { return (p,v) => v / 10**p }
     
 }
 
 class PowMapFuncBuilder extends MapFuncBuilder
 {
     constructor(src, pow) {
-        super({src, mapGetFunc:null, mapSetFunc:null });
+        super({src, mapSrcToDst:null, mapDstToSrc:null });
         this.pow = unwrap(pow);
         if( typeof(this.pow) != 'function' )
             throw new TypeError('function required for pow argument');
     }
     
-    get mapGetFunc      () {
+    get mapSrcToDst () {
         const pow = this.pow;
         return function () {
             let v = [...arguments].slice(-1);
@@ -35,7 +35,7 @@ class PowMapFuncBuilder extends MapFuncBuilder
             return v * 10**p;
         }
     }
-    get mapSetFunc      () {
+    get mapDstToSrc      () {
         const pow = this.pow;
         return function () {
             let v = [...arguments].slice(-1);
