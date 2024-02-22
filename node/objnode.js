@@ -600,7 +600,11 @@ class ObjNode extends Node {
         }
         
         if( incT instanceof TreeFiller ) {
-            incT = incT.sprout();
+            if( this.inSameTree( incT.src ) ) {
+                incT = incT.sproutForMergeTemp();
+            } else {
+                incT = incT.sprout();
+            }
         }
 
         this.absorbHandles(incT);
