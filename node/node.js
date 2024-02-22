@@ -325,6 +325,10 @@ class Node {
         else
             return this._auxHandles;
     }
+    
+    inSameTree(otherNode) {
+        return this.root.treeHasNode(otherNode);
+    }
 }
 
 exports.Node = Node;
