@@ -100,7 +100,17 @@ class TGetNode extends TreeNode {
                 }));
             }
         }
-        return rv;
+        
+        if( this.isRoot )
+            var thisArg = null;
+        else {
+            var thisArg = this.parent.getDTProxyOverMe({
+                rcvr: this,
+                purpose: 'compute'
+            });
+        }
+        
+        return [thisArg, rv];
     }
 
     get value () { return this.getValue() }
@@ -111,10 +121,10 @@ class TGetNode extends TreeNode {
             return this._cachedValue;
         else {
             // TODO: exc handling
-            let args = this._getArgs();
+            let [thisArg, args] = this._getArgs();
             //console.log(`CALL ${this.debugName}`);
             //console.log(args);
-            let v = this._getFunc.apply(null, args);
+            let v = this._getFunc.apply(thisArg, args);
             //console.log(v);
             //console.log(`^ end call`);
             this._cachedValue = v;
