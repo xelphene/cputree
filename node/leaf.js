@@ -104,7 +104,7 @@ class LeafNode extends Node {
                 l.handleValueChanged(h);
                 
         for( let f of this._extListeners )
-            f(this.value);
+            f(this);
     }
     fireNodeValueSpoiled () {
         for( let l of [...this._changeListeners] ) {
