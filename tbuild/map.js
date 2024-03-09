@@ -10,12 +10,16 @@ const {
 } = require('../consts');
 const {toPath, Path} = require('../path');
 const {TreeFiller} = require('./fill');
+const {PotentialNode} = require('./potn');
+const {potnPathFromRoot} = require('../consts');
 
 class MapFuncBuilder extends TreeFiller
 {
     constructor({src, mapSrcToDst, mapDstToSrc, graft, replaceSrcInputs}) {
         super();
         src = unwrap(src);
+        if( src instanceof PotentialNode )
+            throw new Error(`Map operation given potential node ${src[potnPathFromRoot]} as src`);
         this.src = src;
 
         // may be null, in which case child classes will
