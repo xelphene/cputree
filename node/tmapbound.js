@@ -155,6 +155,8 @@ class TMapBoundNode extends TreeNode {
             return v;
         }
     }
+
+    get value () { return this.getValue () }
     
     computeIfNeeded () {
         if( ! this._fresh )
