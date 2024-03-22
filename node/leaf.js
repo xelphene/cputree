@@ -13,7 +13,7 @@ class LeafNode extends Node {
         this._changeListeners = new Set();
         this._isFinalized = false;
         this._directEnumFlag = undefined;
-        this._extListeners = [];
+        this._extListeners = new Set();
         this._listeningTo = new Set();
         this._listeningToHandles = new Set();
         this._handle = new LeafHandle(this);
@@ -188,11 +188,15 @@ class LeafNode extends Node {
     get [N] () { return this }
 
     addExtListener(f) {
-        this._extListeners.push(f);
+        this._extListeners.add(f);
+    }
+    
+    rmExtListener(f) {
+        this._extListeners.delete(f);
     }
     
     rmExtListeners() {
-        this._extListeners = [];
+        this._extListeners = new Set();
     }
 }
 exports.LeafNode = LeafNode;
