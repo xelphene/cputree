@@ -182,7 +182,7 @@ class Node {
         for( let n of this.iterTree({includeNonEnumerable}) ) {
             if( n.isLeaf || includeBranches )
                 if( showValues )
-                    console.log(`${n.fullName}    ${n.debugValue}`);
+                    console.log(`${n.fullName}    ${n.debugValue.toString()}`);
                 else
                     console.log(`${n.fullName}`);
         }
