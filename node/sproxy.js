@@ -190,7 +190,8 @@ exports.getDTProxyHandler = function({overNode, rcvr, purpose})
         
         if( overNode.hasc(key) ) {
             if( overNode.getc(key).settable )
-                overNode.getc(key).value = value;
+                //overNode.getc(key).value = value;
+                overNode.getc(key).setValue(value);
             else
                 throw new Error(`Node ${overNode.getc(key).fullName} is not settable`);
         } else
