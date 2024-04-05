@@ -83,3 +83,30 @@ test('bind_multi', () => {
     expect( R.getc('c').fresh ).toBe( true );
     expect( R.getc('c').computeCount ).toBe( 3 );
 });
+
+test('bind_this', () => {
+    R.addc('i', new TInputNode({defaultValue: 1}) );
+    R.addc('j', new TInputNode({defaultValue: 10}) );
+    R.addc('c', new TGetSetNode({
+        bindings: [R],
+        getFunc: function ()  { return this.i * this.j },
+        setFunc: function (t,v) { this.i = v /this.j }
+    }));
+
+    R.init({});
+
+    expect( R.getc('c').fresh ).toBe( true );
+    expect( R.getc('c').computeCount ).toBe( 1 );
+    expect( R.getc('c').getValue() ).toBe(10);
+    expect( R.getc('c').computeCount ).toBe( 1 );
+    
+    R.getc('c').setValue(20);
+    
+    expect( R.getc('c').fresh ).toBe( false );
+    expect( R.getc('c').computeCount ).toBe( 1 );
+    expect( R.getc('i').getValue() ).toBe( 2 );
+    expect( R.getc('c').getValue() ).toBe( 20 );
+    expect( R.getc('c').fresh ).toBe( true );
+    expect( R.getc('c').computeCount ).toBe( 2 );
+    
+});
