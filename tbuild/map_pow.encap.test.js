@@ -62,7 +62,6 @@ test('merge_fill_graft_branch', () =>
 
 test('merge_fill_sametree_branch', () =>
 {
-    console.log('-'.repeat(80));
     var R = tbuild();
     R.pow = tinput.number(1);
     R.src = getSubTree();
