@@ -17,6 +17,8 @@ exports.anyToString = (x, maxLen) => {
         var s = 'undefined';
     else if( typeof(x)=='symbol' )
         var s = x.toString();
+    else if( typeof(x)=='function' )
+        var s = exports.descFunc(x, maxLen);
     else if( x===null ) 
         var s = 'null'
     else

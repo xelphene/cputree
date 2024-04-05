@@ -9,6 +9,7 @@ const {
 const {toPath,Path} = require('../path');
 const NavError = require('../errors').NavError;
 const {NodeHandle} = require('./handle');
+const {anyToString} = require('../util');
 
 class Node {
     constructor({parent}) {
@@ -138,6 +139,7 @@ class Node {
 
     get debugInfo  () { return '' }
     get debugValue () { return '' }
+    get debugValueStr () { return anyToString(this.debugValue) }
 
     get depth () { return this.isRoot ? 0 : this.parent.depth+1 }
 
@@ -182,7 +184,7 @@ class Node {
         for( let n of this.iterTree({includeNonEnumerable}) ) {
             if( n.isLeaf || includeBranches )
                 if( showValues )
-                    console.log(`${n.fullName}    ${n.debugValue.toString()}`);
+                    console.log(`${n.fullName}    ${n.debugValueStr}`);
                 else
                     console.log(`${n.fullName}`);
         }
