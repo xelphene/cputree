@@ -43,14 +43,24 @@ class TGetSetNode extends TGetNode
                 }));
             }
         }
-        return rv;
+
+        if( this.isRoot )
+            var thisArg = null;
+        else {
+            var thisArg = this.parent.getDTProxyOverMe({
+                rcvr: this,
+                purpose: 'compute'
+            });
+        }
+        
+        return [thisArg, rv];
     }
 
     setValue(v) {
-        let args = this._setArgs();
+        let [thisArg, args] = this._setArgs();
         args = args.concat([v]);
         //console.log(args);
-        this._setFunc.apply(null, args);
+        this._setFunc.apply(thisArg, args);
     }
 
     set [nget] (f) {
