@@ -30,9 +30,12 @@ class PredicateFuncBuilder extends TreeFiller {
             bindings: [this._predicateNode].concat(buildProxyBindings),
             getFunc:  function () {
                 let pred = arguments[0];
-                if( pred in funcs )
-                    return funcs[pred].apply(null, [...arguments].slice(1));
-                else
+                if( pred in funcs ) {
+                    if( ['boolean','string','number'].includes(typeof(funcs[pred])) )
+                        return funcs[pred]
+                    else
+                        return funcs[pred].apply(null, [...arguments].slice(1));
+                } else
                     throw new Error(`unknown predicate ${pred}`);
             }
         }));
