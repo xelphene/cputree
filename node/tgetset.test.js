@@ -110,3 +110,38 @@ test('bind_this', () => {
     expect( R.getc('c').computeCount ).toBe( 2 );
     
 });
+
+test('chain_assign', () => {
+    R.addc('i', new TInputNode({defaultValue: 1}) );
+    R.addc('c', new TGetSetNode({
+        bindings: [R],
+        getFunc: function ()  { return this.i+1 },
+        setFunc: function (t,v) { this.i = v-1 }
+    }));
+    R.addc('d', new TGetSetNode({
+        bindings: [R],
+        getFunc: function ()  { return this.c + 1 },
+        setFunc: function (t,v) { this.c = v - 1 }
+    }));
+
+    R.init({});
+
+    expect( R.getc('c').fresh ).toBe( true );
+    expect( R.getc('c').computeCount ).toBe( 1 );
+    expect( R.getc('c').getValue() ).toBe(2);
+    expect( R.getc('c').computeCount ).toBe( 1 );
+
+    expect( R.getc('d').fresh ).toBe( true );
+    expect( R.getc('d').computeCount ).toBe( 1 );
+    expect( R.getc('d').getValue() ).toBe( 3 );
+    expect( R.getc('d').computeCount ).toBe( 1 );
+    
+    R.getc('d').setValue(10);
+
+    expect( R.getc('i').getValue() ).toBe(8);
+
+    expect( R.getc('c').getValue() ).toBe(9);
+    expect( R.getc('d').getValue() ).toBe(10);
+    expect( R.getc('c').computeCount ).toBe( 2 );
+    expect( R.getc('d').computeCount ).toBe( 2 );
+});
