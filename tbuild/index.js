@@ -8,3 +8,4 @@ exports.tinsert = require('./tinsert');
 exports.bexist = require('../consts').bexist;
 exports.tinput = require('./tinput');
 exports.map = require('./map');
+exports.predFunc = require('./pred').predFunc;
