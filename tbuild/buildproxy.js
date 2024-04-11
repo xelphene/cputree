@@ -178,6 +178,15 @@ class BuildProxy
             rhs.value.fill(o, key, this.bindings);
             return true;
         }
+        
+        if( ! lhs.exists && rhs.isPrimitiveIsh ) {
+            o.addc(key, new TGetNode({
+                bindings: [],
+                getFunc:  () => rhs.value
+            }))
+            return true;
+        }
+
         // <<< assignToSettable
         
         

@@ -57,7 +57,16 @@ class RHSWrapper
         this.key = key;
         this.value = value;
     }
-    
+
+    get isPrimitiveIsh () {
+        if( ['number','string','boolean','null'].includes(typeof(this.value)) )
+            return true;
+        else if( this.value === null )
+            return true;
+        else
+            return false;
+    }
+
     get isInput () {
         return this.value instanceof TInputNode;
     }
@@ -95,7 +104,7 @@ class RHSWrapper
     }
 
     get summary () {
-        return `o=${this.o.fullName} key=${this.key.toString()} isLeaf=${this.isLeaf} isInput=${this.isInput} isBexist=${this.isBexist} isNodeInOurTree=${this.isNodeInOurTree}`;
+        return `o=${this.o.fullName} key=${this.key.toString()} isLeaf=${this.isLeaf} isInput=${this.isInput} isBexist=${this.isBexist} isNodeInOurTree=${this.isNodeInOurTree} isPrimitiveIsh=${this.isPrimitiveIsh}`;
     }
 }
 exports.RHSWrapper = RHSWrapper;
