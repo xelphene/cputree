@@ -12,6 +12,8 @@ const pbKeyInParent = Symbol('pbKeyInParent');
 const pbIs = Symbol('pbIs');
 const ObjNode = require('../node/objnode.js').ObjNode;
 
+exports.pbExist = pbExist;
+
 class PotentialNode
 {
     constructor(parent, keyInParent, buildProxy) {
@@ -36,12 +38,19 @@ class PotentialNode
 
     // turn this PotentialNode into a real ObjNode
     [pbExist] () {
-        if( this[pbParent] instanceof PotentialNode )
-            return this[pbParent][pbExist]()
-                .addBranch(this[pbKeyInParent]);
-        else
+        if( this[pbParent] instanceof PotentialNode ) {
+            let p = this[pbParent][pbExist]();
+            if( p.hasBranchWithKey(this[pbKeyInParent]) )
+                return p.getc(this[pbKeyInParent]);
+            else
+                return p.addBranch(this[pbKeyInParent]);
+        } else {
             // parent must be a real ObjNode instance, not another PotentialNode
-            return this[pbParent].addBranch(this[pbKeyInParent]);
+            if( this[pbParent].hasBranchWithKey(this[pbKeyInParent]) )
+                return this[pbParent].getc( this[pbKeyInParent] );
+            else
+                return this[pbParent].addBranch(this[pbKeyInParent]);
+        }
     }
     
     // turn this PotentialNode into a real TGetSetNode
@@ -103,6 +112,9 @@ const PotentialNodeProxyHandler =
         
         if( key==='hasOwnProperty' )
             return k => o.hasOwnProperty(k);
+        
+        if( key===pbExist )
+            return () => o[pbExist]();
         
         if( [potnPathFromRoot, 'constructor'].includes(key) )
             return Reflect.get(o, key);

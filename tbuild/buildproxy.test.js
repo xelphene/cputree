@@ -310,3 +310,23 @@ test('replace_tinput', () =>
     R = unwrap(R);
     R.init({i:'str'});
 });
+
+test('multi_bind', () =>
+{
+    var T = tbuild();
+    T.p = () => 10;
+    T.unit = tinput.string();
+    
+    var S2 = tbuild(T.s2, [ T, T.s, T.s2 ]);
+    S2.c = (t,s,s2) => t.p + s.c + s2.C;
+    S2.C = () => 100;
+    T.s2 = S2;
+
+    T.s.c = () => 222;
+    
+    T = unwrap(T);
+    T.init({unit: 'in'});
+    var t = T.rawObject;
+    
+    expect( t.s2.c ).toBe( 332 );    
+});

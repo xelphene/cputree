@@ -11,7 +11,7 @@ const {MapFuncBuilder} = require('./map');
 const {unwrap} = require('./util');
 const {mapSym} = require('./map');
 const {TreeFiller} = require('./fill');
-const { getPotentialNodeProxy, PotentialNode } = require('./potn');
+const { getPotentialNodeProxy, PotentialNode, pbExist } = require('./potn');
 const {RHSWrapper, LHSWrapper} = require('./hswrapper');
 
 function makeHasOwnProperty(o) {
@@ -292,15 +292,27 @@ function tbuild (root, opts)
 {
     if( opts===undefined )
         opts = {};
+    else if( Array.isArray(opts) )
+        opts = {bind: opts};
 
     if( opts.ObjNodeClass===undefined )
         opts.ObjNodeClass = ObjNode;
 
     if( root===undefined || root===null )
         root = new opts.ObjNodeClass({});
+    else if( root instanceof PotentialNode )
+        root = root[pbExist]();
+    else
+        root = unwrap(root);
 
     if( opts.bind===undefined )
         opts.bind = [root];
+    else {
+        opts.bind = opts.bind.map(unwrap);
+        for( let i=0; i<opts.bind.length; i++ )
+            if( opts.bind[i] instanceof PotentialNode )
+                opts.bind[i] = opts.bind[i][pbExist]();
+    }
     
     const bp = new BuildProxy(opts.bind);
     
