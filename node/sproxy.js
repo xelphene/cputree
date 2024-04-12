@@ -170,13 +170,23 @@ exports.getDTProxyHandler = function({overNode, rcvr, purpose})
         log(`getOwnPropertyDescriptor ${overNode.fullName} . ${key.toString()} ${overNode.isTreeFinalized}`);
         if( ! overNode.hasNodeWithKey(key) )
             return;
-        return {
-            //value: overNode.isTreeFinalized ? overNode.getProp(key).value : PRE_FINAL_LEAF_VALUE,
-            //value: exports.getDTProxyHandler.get({overNode, key, }),
-            value: overNode.getProp(key).getDTProxyOverMe({rcvr,purpose}),
-            writable: false,
-            enumerable: overNode.getProp(key).enumerable,
-            configurable: true
+
+        if( overNode.hasBranchWithKey(key) ) {
+            return {
+                //value: overNode.isTreeFinalized ? overNode.getProp(key).value : PRE_FINAL_LEAF_VALUE,
+                //value: exports.getDTProxyHandler.get({overNode, key, }),
+                value: overNode.getProp(key).getDTProxyOverMe({rcvr,purpose}),
+                writable: false,
+                enumerable: overNode.getProp(key).enumerable,
+                configurable: true
+            }
+        } else {
+            return {
+                value: overNode.getProp(key).value,
+                writable: false,
+                enumerable: overNode.getProp(key).enumerable,
+                configurable: true
+            }
         }
     },
 
