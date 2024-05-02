@@ -1,6 +1,8 @@
 
 'use strict';
 
+const {N, isDTProxy, dtProxyWrappedObject} = require('./consts');
+
 exports.allOwnKeys = o => Object.getOwnPropertyNames(o)
     .concat(Object.getOwnPropertySymbols(o));
 
@@ -13,7 +15,9 @@ exports.allOwnValues = o => exports.allOwnKeys(o).map(
 );
 
 exports.anyToString = (x, maxLen) => {
-    if( typeof(x)=='object' && 'toString' in x )
+    if( typeof(x)=='object' && x[N] )
+        return `ObjNode ${x[N].fullName}`;
+    else if( typeof(x)=='object' && 'toString' in x )
         return x.toString();
     else if( typeof(x)=='object' && ! ('toString' in x) )
         return '[object]'

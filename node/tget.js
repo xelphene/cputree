@@ -1,7 +1,7 @@
 
 'use strict';
 
-const {nget, nset} = require('../consts');
+const {nget, nset, isDTProxy, dtProxyWrappedObject} = require('../consts');
 const {Node} = require('../node/node');
 const {LeafNode} = require('./leaf');
 const {TreeNode}  =require('./treenode');
@@ -12,7 +12,10 @@ const {ObjNode} = require('../node/objnode');
 class TGetNode extends TreeNode {
     constructor({bindings, getFunc}) {
         super({});
-
+        
+        if( bindings===undefined )
+            bindings = [];
+        
         for( let i=0; i<bindings.length; i++ ) {
             if( bindings[i] instanceof Node ) {
                 bindings[i] = bindings[i].handle;
@@ -127,6 +130,10 @@ class TGetNode extends TreeNode {
             let v = this._getFunc.apply(thisArg, args);
             //console.log(v);
             //console.log(`^ end call`);
+            
+            if( typeof(v)=='object' && v[isDTProxy] )
+                v = v[dtProxyWrappedObject].rawObject;
+            
             this._cachedValue = v;
             this._fresh = true;
             this._computeCount++;

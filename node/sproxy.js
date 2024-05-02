@@ -8,7 +8,7 @@ const {
     PRE_FINAL_LEAF_VALUE, bmap
 } = require('../consts');
 
-const Node = require('./node').Node;
+const {Node} = require('./node');
 
 class MapDef {
     constructor(node, mapFunc) {
@@ -18,6 +18,13 @@ class MapDef {
 }
 exports.MapDef = MapDef;
 
+function isLeafWithBranchValue(overNode, key) {
+    return (
+        overNode.hasLeafWithKey(key) && 
+        typeof(overNode.getc(key).value)=='object' &&
+        overNode.getc(key).value[N]
+    );
+}
 
 exports.getDTProxyHandler = function({overNode, rcvr, purpose}) 
 {
@@ -138,13 +145,17 @@ exports.getDTProxyHandler = function({overNode, rcvr, purpose})
             };
         }
         else if( overNode.hasBranchWithKey(key) )  {
-            return overNode.getProp(key).getDTProxyOverMe({rcvr,purpose});
+            return overNode.getc(key).getDTProxyOverMe({rcvr,purpose});
+        }
+        else if( isLeafWithBranchValue(overNode, key) ) {
+            return overNode.getc(key).value[N]
+                .getDTProxyOverMe({rcvr,purpose});
         }
         else if( overNode.hasLeafWithKey(key) ) {
             log(`get leaf ${overNode.fullName}.${key.toString()}`);
             rcvr.dependencyFound(overNode.getProp(key));
             if( overNode.isTreeFinalized ) {
-                return overNode.getProp(key).getValue();
+                return overNode.getc(key).getValue();
             }
             else
                 return PRE_FINAL_LEAF_VALUE;
