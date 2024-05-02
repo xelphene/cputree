@@ -13,7 +13,11 @@ exports.allOwnValues = o => exports.allOwnKeys(o).map(
 );
 
 exports.anyToString = (x, maxLen) => {
-    if( typeof(x)=='undefined' )
+    if( typeof(x)=='object' && 'toString' in x )
+        return x.toString();
+    else if( typeof(x)=='object' && ! ('toString' in x) )
+        return '[object]'
+    else if( typeof(x)=='undefined' )
         var s = 'undefined';
     else if( typeof(x)=='symbol' )
         var s = x.toString();
