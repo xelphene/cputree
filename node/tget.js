@@ -131,7 +131,7 @@ class TGetNode extends TreeNode {
             //console.log(v);
             //console.log(`^ end call`);
             
-            if( typeof(v)=='object' && v[isDTProxy] )
+            if( typeof(v)=='object' && v!==null && v[isDTProxy] )
                 v = v[dtProxyWrappedObject].rawObject;
             
             this._cachedValue = v;

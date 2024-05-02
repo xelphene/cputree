@@ -15,7 +15,9 @@ exports.allOwnValues = o => exports.allOwnKeys(o).map(
 );
 
 exports.anyToString = (x, maxLen) => {
-    if( typeof(x)=='object' && x[N] )
+    if( x===null )
+        var s = 'null';
+    else if( typeof(x)=='object' && x[N] )
         return `ObjNode ${x[N].fullName}`;
     else if( typeof(x)=='object' && 'toString' in x )
         return x.toString();
@@ -27,8 +29,6 @@ exports.anyToString = (x, maxLen) => {
         var s = x.toString();
     else if( typeof(x)=='function' )
         var s = exports.descFunc(x, maxLen);
-    else if( x===null ) 
-        var s = 'null'
     else
         var s = ''+x;
 

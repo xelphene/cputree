@@ -22,6 +22,7 @@ function isLeafWithBranchValue(overNode, key) {
     return (
         overNode.hasLeafWithKey(key) && 
         typeof(overNode.getc(key).value)=='object' &&
+        overNode.getc(key).value !== null &&
         overNode.getc(key).value[N]
     );
 }
