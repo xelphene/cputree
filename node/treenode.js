@@ -7,7 +7,7 @@ class TreeNode extends LeafNode {
     get debugLines () {
         let rv = [
             `class: ${this.constructor.name}`,
-            `value: ${this.debugValue}`,
+            `value: ${this.debugValueStr}`,
         ];
         
         rv.push(`listeningToHandles:`);
