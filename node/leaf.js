@@ -85,6 +85,9 @@ class LeafNode extends Node {
         for( let n2 of this._listeningTo )
             if( n===n2 )
                 return true;
+        for( let h of this._listeningToHandles )
+            if( h.node === n )
+                return true;
         return false;
     }
     get listeningToStr () {
