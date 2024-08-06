@@ -7,6 +7,16 @@ const {LeafNode} = require('./leaf');
 const {anyToString} = require('../util');
 const {TRelayInputNode} = require('./trelayinput');
 
+/*
+
+TODO: restructure assignment / implied init
+
+initValueDefault () // init with default value
+initValueAssign (v) // init by first assignment
+setValue (v) // ONLY called for post-init assigns
+
+*/
+
 class TInputNode extends TreeNode {
     constructor({defaultValue, validate}) {
         super({});
