@@ -9,9 +9,13 @@ const {nget, nset} = require('../consts');
 
 class TGetSetNode extends TGetNode
 {
-    constructor({bindings, getFunc, setFunc}) {
+    constructor({bindings, getFunc, setFunc, setFuncBindMode}) {
         super({bindings, getFunc});
         this.setFunc = setFunc;
+        if( setFuncBindMode===undefined )
+            this._setFuncBindMode = 'value';
+        else
+            this._setFuncBindMode = setFuncBindMode;
     }
 
     get setFunc () { return this._setFunc }
@@ -31,7 +35,7 @@ class TGetSetNode extends TGetNode
         return rv;
     }
     
-    _setArgs () {
+    _setArgsValues () {
         var rv = [];
         for( let b of this._bindings ) {
             if( b.node instanceof LeafNode ) {
@@ -54,6 +58,24 @@ class TGetSetNode extends TGetNode
         }
         
         return [thisArg, rv];
+    }
+    
+    _setArgsNodes () {
+        var rv = [];
+        for( let b of this._bindings ) {
+            rv.push(b.node);
+        }
+
+        var thisArg = null;
+
+        return [thisArg, rv];
+    }
+    
+    _setArgs () {
+        if( this._setFuncBindMode=='node' )
+            return this._setArgsNodes();
+        else
+            return this._setArgsValues();
     }
 
     setValue(v) {
