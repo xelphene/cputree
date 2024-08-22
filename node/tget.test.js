@@ -138,7 +138,6 @@ test('bindmode', () => {
         getFunc:  aNode => aNode.value + 1,
     }));
     R.init();
-    R.logFlat();
     
     expect( R.getc('f').value ).toBe( 223 );
     expect( R.getc('f').isListeningTo( R.getc('a') ) ).toBe( true );
