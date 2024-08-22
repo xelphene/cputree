@@ -129,3 +129,21 @@ test('nodeof', () => {
     R.init();
     expect( nodeOf(R.nav('o').value) ).toBe( R.nav('o') );
 });
+
+test('bindmode', () => {
+    R.addc('a', new TInputNode({defaultValue: 222}) );
+    R.addc('f', new TGetNode({
+        bindings: [R.getc('a')],
+        getFuncBindMode: 'node',
+        getFunc:  aNode => aNode.value + 1,
+    }));
+    R.init();
+    R.logFlat();
+    
+    expect( R.getc('f').value ).toBe( 223 );
+    expect( R.getc('f').isListeningTo( R.getc('a') ) ).toBe( true );
+    
+    R.getc('a').setValue( 333 );
+    
+    expect( R.getc('f').value ).toBe( 334 );
+});

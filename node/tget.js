@@ -10,7 +10,7 @@ const {descFunc, anyToString, addNodeIfPossible} = require('../util');
 const {ObjNode} = require('../node/objnode');
 
 class TGetNode extends TreeNode {
-    constructor({bindings, getFunc}) {
+    constructor({bindings, getFunc, getFuncBindMode}) {
         super({});
         
         if( bindings===undefined )
@@ -33,6 +33,12 @@ class TGetNode extends TreeNode {
         this._fresh = false;
         this._cachedValue = undefined;
         this._computeCount = 0;
+        
+        if( getFuncBindMode===undefined )
+            this._getFuncBindMode = 'value';
+        else
+            this._getFuncBindMode = getFuncBindMode;
+
     }
 
     get bindings () { return this._bindings }
@@ -82,13 +88,13 @@ class TGetNode extends TreeNode {
             this.fireNodeValueSpoiled();
         }
     }
-    
+
     // TODO: separate persistent listens (i.e. from bindings) from
     // those gathered via DTProxy. save persistent ones.
     // the persistent ones would be set up on finalization
     // if we have the static deps optimization set, *all* listens are 
     // persistent
-    _getArgs() {
+    _getArgsValues() {
         var rv = [];
         for( let b of this._bindings ) {
             if( b.node instanceof LeafNode ) {
@@ -103,7 +109,7 @@ class TGetNode extends TreeNode {
                 }));
             }
         }
-        
+
         if( this.isRoot )
             var thisArg = null;
         else {
@@ -112,8 +118,29 @@ class TGetNode extends TreeNode {
                 purpose: 'compute'
             });
         }
-        
+
         return [thisArg, rv];
+    }
+
+    _getArgsNodes() {
+        var rv = [];
+        for( let b of this._bindings ) {
+            if( b.node instanceof LeafNode ) {
+                this._listenToHandle(b);
+                rv.push( b.node )
+            } else {
+                throw new Error(`${this.fullName} getFuncBindMode is ${this._getFuncBindMonde} and has an ObjNode binding`);
+            }
+        }
+        
+        return [null, rv];
+    }
+
+    _getArgs () {
+        if( this._getFuncBindMode=='node' )
+            return this._getArgsNodes();
+        else
+            return this._getArgsValues();
     }
 
     get value () { return this.getValue() }

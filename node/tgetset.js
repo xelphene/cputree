@@ -9,8 +9,8 @@ const {nget, nset} = require('../consts');
 
 class TGetSetNode extends TGetNode
 {
-    constructor({bindings, getFunc, setFunc, setFuncBindMode}) {
-        super({bindings, getFunc});
+    constructor({bindings, getFunc, setFunc, setFuncBindMode, getFuncBindMode}) {
+        super({bindings, getFunc, getFuncBindMode});
         this.setFunc = setFunc;
         if( setFuncBindMode===undefined )
             this._setFuncBindMode = 'value';
