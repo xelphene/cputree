@@ -1,7 +1,7 @@
 
 'use strict';
 
-const {N, isDTProxy, dtProxyWrappedObject} = require('./consts');
+const {VALUE_NODE, N, isDTProxy, dtProxyWrappedObject} = require('./consts');
 
 exports.allOwnKeys = o => Object.getOwnPropertyNames(o)
     .concat(Object.getOwnPropertySymbols(o));
@@ -50,3 +50,26 @@ exports.descFunc = (f, maxLen) => {
     } else
         throw new TypeError(`function or null required for argument 0`);
 };
+
+exports.nodeOf = function(x) {
+    if( typeof(x)==='object' && x.hasOwnProperty(VALUE_NODE) )
+        return x[VALUE_NODE];
+    else
+        throw new Error('value has no node');
+}
+
+exports.hasNode = function (x) {
+    return typeof(x)=='object' && x!==null && x.hasOwnProperty(VALUE_NODE)
+}
+
+exports.addNodeIfPossible = function(x, node) {
+    if( typeof(x)=='object' && x!==null && ! Object.isFrozen(x) ) {
+        let d = Object.getOwnPropertyDescriptor(x, VALUE_NODE);
+        if( d===undefined || d.writable )
+            Object.defineProperty(x, VALUE_NODE, {
+                enumerable: false,
+                value: node
+            })
+    }
+
+}

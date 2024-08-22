@@ -1,12 +1,12 @@
 
 'use strict';
 
-const {nget, nset, isDTProxy, dtProxyWrappedObject} = require('../consts');
+const {VALUE_NODE, nget, nset, isDTProxy, dtProxyWrappedObject} = require('../consts');
 const {Node} = require('../node/node');
 const {LeafNode} = require('./leaf');
 const {TreeNode}  =require('./treenode');
 const {NodeHandle} = require('../node/handle');
-const {descFunc, anyToString} = require('../util');
+const {descFunc, anyToString, addNodeIfPossible} = require('../util');
 const {ObjNode} = require('../node/objnode');
 
 class TGetNode extends TreeNode {
@@ -139,6 +139,9 @@ class TGetNode extends TreeNode {
             this._fresh = true;
             this._computeCount++;
             this.fireNodeValueChanged();
+            
+            addNodeIfPossible(v, this);
+                        
             return v;
         }
     }

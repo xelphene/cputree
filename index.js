@@ -39,6 +39,9 @@ exports.mioMapOut = require('./consts').mioMapOut;
 exports.toPath = require('./path').toPath;
 exports.Path = require('./path').Path;
 
+exports.nodeOf = require('./util').nodeOf;
+exports.hasNode = require('./util').hasNode;
+
 exports.inpn = require('./inpn');
 exports.errors = require('./errors');
 

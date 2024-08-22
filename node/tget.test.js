@@ -4,6 +4,7 @@
 const {ObjNode} = require('../node/objnode');
 const {TInputNode} = require('./tinput');
 const {TGetNode} = require('./tget');
+const {nodeOf} = require('../util');
 
 var R;
 
@@ -118,4 +119,13 @@ test('value_is_branch', () => {
     expect( R.nav('p.y').isListeningTo( R.nav('s.s2.c') ) ). toBe( true );
     expect( R.nav('p.y').isListeningTo( R.nav('r') ) ).toBe( false );
     expect( R.nav('p.y').isListeningTo( R.nav('s') ) ).toBe( false );
+});
+
+test('nodeof', () => {
+    R.addc('o', new TGetNode({
+        bindings: [],
+        getFunc:  () => { return {x:222} }
+    }));
+    R.init();
+    expect( nodeOf(R.nav('o').value) ).toBe( R.nav('o') );
 });

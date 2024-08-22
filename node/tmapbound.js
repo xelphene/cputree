@@ -5,7 +5,7 @@ const {TreeNode}  =require('./treenode')
 const {LeafNode} = require('./leaf');
 const {NodeHandle} = require('../node/handle');
 const {Node} = require('../node/node');
-const {descFunc, anyToString} = require('../util');
+const {descFunc, anyToString, addNodeIfPossible} = require('../util');
 
 class TMapBoundNode extends TreeNode {
     constructor({bindings, mapGetFunc, mapSetFunc, srcNode}) {
@@ -152,6 +152,9 @@ class TMapBoundNode extends TreeNode {
             this._fresh = true;
             this._computeCount++;
             this.fireNodeValueChanged();
+            
+            addNodeIfPossible(v, this);
+            
             return v;
         }
     }

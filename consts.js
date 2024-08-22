@@ -9,6 +9,7 @@ exports.MAJORS = Symbol('MAJORS');
 exports.C = Symbol('C');
 exports.N = Symbol('N');
 exports.O = Symbol('O');
+exports.VALUE_NODE = Symbol('VALUE_NODE');
 
 exports.NAME_SEP = '.';
 exports.ROOT_STR = '☉';

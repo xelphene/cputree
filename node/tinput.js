@@ -1,6 +1,7 @@
 
 'use strict';
 
+const {addNodeIfPossible} = require('../util');
 const {InputValidationError} = require('../errors');
 const {TreeNode} = require('./treenode');
 const {LeafNode} = require('./leaf');
@@ -61,6 +62,7 @@ class TInputNode extends TreeNode {
     
     setValue (v) {
         this._setValue(v, !this._initted, false);
+        addNodeIfPossible(v, this);
         this.fireNodeValueChanged();
     }
 
@@ -86,6 +88,7 @@ class TInputNode extends TreeNode {
         }
         this._initted = true;
         this._value = value;
+        addNodeIfPossible(this._value, this);
     }
     
     computeIfNeeded() {
