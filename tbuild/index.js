@@ -9,3 +9,5 @@ exports.bexist = require('../consts').bexist;
 exports.tinput = require('./tinput');
 exports.map = require('./map');
 exports.predFunc = require('./pred').predFunc;
+exports.mapSym = require('./map').mapSym;
+exports.mapSplit = require('./map').mapSplit;
