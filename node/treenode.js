@@ -55,5 +55,53 @@ class TreeNode extends LeafNode {
         
         this._unlistenAllHandles();
     }
+    
+    // iterate over all TMapBoundNodes which have this as their srcNode
+    // optionally only show those which have the given mapGetFunc and mapSetFunc
+    * iterMapNodes_OLD ({mapGetFunc,mapSetFunc}) {
+        const {TMapBoundNode} = require('./tmapbound');
+        for( let h of this.handles )
+            for( let n of h.changeListeners )
+                if( n instanceof TMapBoundNode && n.srcNode===this ) {
+                    if( mapGetFunc!==undefined && n.mapGetFunc!==mapGetFunc )
+                        continue;
+                    if( mapSetFunc!==undefined && n.mapSetFunc!==mapSetFunc )
+                        continue;
+                    yield n;
+                }
+    }
+
+    // recursively iterate over all TMapBoundNodes which have this as their
+    // srcNode.  yield eacy TMapBoundNode as well as an array of all
+    // TMapBoundNodes in between
+    //
+    // optionally only show those which have the given mapGetFunc
+    // and mapSetFunc
+    * iterMapNodes ({mapGetFunc,mapSetFunc,stack}) {
+        if( stack===undefined ) stack=[];
+        
+        stack = stack.concat(this);
+        
+        const {TMapBoundNode} = require('./tmapbound');
+        for( let h of this.handles )
+            for( let n of h.changeListeners )
+                if( n instanceof TMapBoundNode && n.srcNode===this ) {
+                    if( mapGetFunc!==undefined && n.mapGetFunc!==mapGetFunc )
+                        continue;
+                    if( mapSetFunc!==undefined && n.mapSetFunc!==mapSetFunc )
+                        continue;
+                    
+                    // TODO: this should yield objects with methods to
+                    // reverse the map call chain
+                    yield [n, stack.concat(n) ];
+                    
+                    const iter = n.iterMapNodes({
+                        mapGetFunc, mapSetFunc,
+                        stack: stack,
+                    })
+                    for( let i of iter )
+                        yield i;
+                }
+    }
 };
 exports.TreeNode = TreeNode;

@@ -56,6 +56,51 @@ class TMapBoundNode extends TreeNode {
     get computeCount () { return this._computeCount }
 
     get srcValue () { return this._srcNode.node.getValue() }
+    get srcNode  () { return this._srcNode.node }
+    
+    get mapGetFunc () { return this._mapGetFunc }
+    get mapSetFunc () { return this._mapSetFunc }
+    
+    invokeMapGetFunc (v) {
+        const args = [];
+        for( let b of this._bindings ) {
+            if( b.node instanceof LeafNode )
+                args.push( b.node.value )
+            else
+                // setter purpose used because it has no side effects
+                args.push( b.node.getDTProxyOverMe({ purpose: 'setter' }) );
+        }
+        args.push(v);
+        return this._mapGetFunc.apply(null, args);
+    }
+
+    invokeMapSetFunc (v) {
+        var args = [];
+        for( let b of this._bindings ) {
+            if( b.node instanceof LeafNode )
+                args.push( b.node.value );
+            else
+                // setter purpose used because it has no side effects
+                args.push( b.node.getDTProxyOverMe({ purpose: 'setter' }) );
+        }
+        args.push(v);
+        return this._mapSetFunc.apply(null, args);
+    }
+
+    // pretend this node has value v
+    // 
+    // recursively reverse map operations and return the value that my
+    // ultimate srcNode would have
+    //
+    // optionally, pretend testSrcNode is srcNode. don't crawl all the way 
+    // back up to real srcNode
+    testRevValue (v, testSrcNode) {
+        if( !(this.srcNode instanceof TMapBoundNode) || testSrcNode===this.srcNode ) {
+            return this.invokeMapSetFunc(v)
+        } else {
+            return this.srcNode.testRevValue( this.invokeMapSetFunc(v) )
+        }
+    }
     
     get debugLines () {
         let rv = super.debugLines;
@@ -133,7 +178,6 @@ class TMapBoundNode extends TreeNode {
                 }));
             }
         }
-        rv.push(this.srcValue);
         return rv;
     }
     
@@ -143,6 +187,7 @@ class TMapBoundNode extends TreeNode {
         else {
             // TODO: exc handling
             let args = this._getArgs();
+            args.push(this.srcValue);
             //console.log(`CALL ${this.debugName}`);
             //console.log(args);
             let v = this._mapGetFunc.apply(null, args);

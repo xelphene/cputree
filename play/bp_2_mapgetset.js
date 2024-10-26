@@ -22,7 +22,7 @@ R.o.j = t => t.j;
 //R.m = tinsert.map( R.o, (t,v) => v * t.md );
 
 //R.m = tinsert.mapBi( R.o, (t,v) => -v );
-R.m = tinsert.mapBi( R.o, (t,v) => v * t.md, (t,v) => v / t.md );
+R.m = tinsert.mapSym( R.o, (t,v) => v * t.md, (t,v) => v / t.md );
 
 //R.pow = tinsert.input(3);
 //R.mp = tinsert.powMap( R.o, R.pow ); // works
