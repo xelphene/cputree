@@ -77,7 +77,8 @@ class TreeNode extends LeafNode {
     //
     // optionally only show those which have the given mapGetFunc
     // and mapSetFunc
-    * iterMapNodes ({mapGetFunc,mapSetFunc,stack}) {
+    * iterMapNodes ({mapGetFunc,mapSetFunc,stack,testSrcNode}) {
+        if( testSrcNode===undefined ) testSrcNode=this;
         if( stack===undefined ) stack=[];
         
         stack = stack.concat(this);
@@ -93,10 +94,11 @@ class TreeNode extends LeafNode {
                     
                     // TODO: this should yield objects with methods to
                     // reverse the map call chain
-                    yield [n, stack.concat(n) ];
+                    //yield [n, stack.concat(n) ];
+                    yield [n, stack.concat(n), v => n.testRevValue(v, testSrcNode) ];
                     
                     const iter = n.iterMapNodes({
-                        mapGetFunc, mapSetFunc,
+                        mapGetFunc, mapSetFunc, testSrcNode,
                         stack: stack,
                     })
                     for( let i of iter )

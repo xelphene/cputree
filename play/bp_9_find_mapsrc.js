@@ -105,3 +105,18 @@ console.log( R.nav('S.f').testRevValue( 122 ) );
 console.log('/ / / / / /');
 
 console.log( R.nav('S.f').testRevValue( 122, R.nav('s.f') ) );
+
+console.log('= = = = = = =');
+for( let [n,stack,rev] of base.iterMapNodes({}) ) {
+    const ss = stack.map(n => n.fullName).join(', ');
+    const rv = rev(1000);
+    console.log(`${'  '.repeat(stack.length)}${n.fullName} <<  ${ss} >> ${rv}`);
+}
+
+console.log('= = = = = = =');
+for( let [n,stack,rev] of R.nav('s.f').iterMapNodes({}) ) {
+    const ss = stack.map(n => n.fullName).join(', ');
+    const rv = rev(1000);
+    console.log(`${'  '.repeat(stack.length)}${n.fullName} <<  ${ss} >> ${rv}`);
+}
+
