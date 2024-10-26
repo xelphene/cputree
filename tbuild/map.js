@@ -217,4 +217,16 @@ function mapSym(src, mapFunc, opts)
 }
 exports.mapSym = mapSym;
 
+function mapSplit(src, mapSrcToDst, mapDstToSrc, opts)
+{
+    if( opts===undefined ) opts = {};
+    if( opts.graft === undefined ) opts.graft = true;
 
+    return new MapFuncBuilder({
+        src,
+        mapSrcToDst: mapSrcToDst,
+        mapDstToSrc: mapDstToSrc,
+        graft: opts.graft,
+    });
+}
+exports.mapSplit = mapSplit;

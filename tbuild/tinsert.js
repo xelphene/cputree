@@ -26,6 +26,7 @@ function input(defaultValue) {
 exports.input = input;
 
 exports.map = require('./map').map;
-exports.mapBi = require('./map').mapBi;
+exports.mapSym = require('./map').mapSym;
+exports.mapSplit = require('./map').mapSplit;
 exports.powMap = require('./map_pow').powMap;
 
