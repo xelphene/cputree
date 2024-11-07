@@ -105,5 +105,53 @@ class TreeNode extends LeafNode {
                         yield i;
                 }
     }
+    
+    // iterate over all MapNodes with me as their srcNode.
+    // if non-null, return only those whose funcs and bindings are as specified
+    * iterMyMapNodes({ mapGetFunc, mapSetFunc, bindings }) {
+        const {TMapBoundNode} = require('./tmapbound');
+        for( let h of this.handles )
+            for( let n of h.changeListeners )
+                if( n instanceof TMapBoundNode && n.srcNode===this ) {
+                    const match = n.hasEquivMapping({
+                        mapGetFunc, mapSetFunc, bindings
+                    });
+                    if( match )
+                        yield n
+                }
+    }
+    
+    // find every TMapBoundNode anywhere originating from this node and
+    // whose mapping behavior is as specified in the list of mappings
+    // mapSpecs is a TMapBound.getMapSpec return value
+    * findMapNodesBySpecs (mapSpecs) {
+        if( mapSpecs.length < 1 )
+            throw new Error(`need at least 1 mapSpec`);
+        
+        const iter = this.iterMyMapNodes({
+            mapGetFunc:     mapSpecs[0].mapGetFunc,
+            mapSetFunc:     mapSpecs[0].mapSetFunc,
+            bindings:       mapSpecs[0].bindings,
+        })
+
+        for( let node of iter ) {
+            if( mapSpecs.length==1 )
+                yield node;
+            else {
+                for( let node2 of node.findMapNodesBySpecs( mapSpecs.slice(1) ) )
+                    yield node2;
+            }
+        }        
+    }
+
+    // find every TMapBoundNode anywhere originating from this node and
+    // whose mapping behavior is the same as mapNode
+    * findMapNodesLike (mapNode) {
+        const mapSpecs = mapNode.getMapSpecs();
+        mapSpecs.reverse();
+        for( let n of this.findMapNodesBySpecs( mapSpecs ) )
+            if( n!==mapNode )
+                yield n;
+    }
 };
 exports.TreeNode = TreeNode;

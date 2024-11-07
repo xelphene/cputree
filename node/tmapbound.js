@@ -57,6 +57,12 @@ class TMapBoundNode extends TreeNode {
 
     get srcValue () { return this._srcNode.node.getValue() }
     get srcNode  () { return this._srcNode.node }
+    get ultimateSrcNode () {
+        if( this.srcNode instanceof this.constructor )
+            return this.srcNode.ultimateSrcNode;
+        else
+            return this.srcNode;
+    }
     
     get mapGetFunc () { return this._mapGetFunc }
     get mapSetFunc () { return this._mapSetFunc }
@@ -85,6 +91,20 @@ class TMapBoundNode extends TreeNode {
         }
         args.push(v);
         return this._mapSetFunc.apply(null, args);
+    }
+    
+    invokeMapSetFuncRec (v) {
+        if( this.srcNode instanceof this.constructor )
+            return this.srcNode.invokeMapSetFuncRec( this.invokeMapSetFunc(v) );
+        else
+            return this.invokeMapSetFunc(v);
+    }
+
+    invokeMapGetFuncRec (v) {
+        if( this.srcNode instanceof this.constructor )
+            return this.srcNode.invokeMapGetFuncRec( this.invokeMapGetFunc(v) );
+        else
+            return this.invokeMapGetFunc(v);
     }
 
     // pretend this node has value v
@@ -209,6 +229,61 @@ class TMapBoundNode extends TreeNode {
     computeIfNeeded () {
         if( ! this._fresh )
             this.getValue();
+    }
+    
+    hasEquivMapping({ mapGetFunc, mapSetFunc, bindings }) {
+        //if( srcNode!==undefined && this.srcNode!==srcNode )
+        //    return false;
+        if( mapGetFunc!==undefined && this._mapGetFunc!==mapGetFunc )
+            return false;
+        if( mapSetFunc!==undefined && this._mapSetFunc!==mapSetFunc )
+            return false;
+        if( bindings!==undefined ) {
+            if( bindings.length != this._bindings.length )
+                return false;
+
+            // the constructor to TMapBoundNode accepts either Nodes or NodeHandles
+            // it only stores refs to NodeHandles
+            // replicate that here for comparison
+            const cmpBindings = [];
+            for( let b of bindings ) {
+                if( b instanceof Node ) {
+                    cmpBindings.push( b.handle );
+                } else if( b instanceof NodeHandle ) {
+                    cmpBindings.push( b );
+                } else {
+                    throw new Error(`Node or Handle instance required for binding ${i}`);
+                }
+            }
+                
+            for( let i=0; i<this._bindings.length; i++ ) {
+                if( this._bindings[i] !== cmpBindings[i] )
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    getMapSpec () {
+        return {
+            mapNode: this,
+            srcNode: this.srcNode,
+            mapGetFunc: this._mapGetFunc,
+            mapSetFunc: this._mapSetFunc,
+            bindings: this._bindings,
+        }
+        return s;
+    }
+    
+    getMapSpecs (stopNode) {
+        const specs = [ this.getMapSpec() ];
+        
+        if( this.srcNode instanceof this.constructor ) {
+            return specs.concat(
+                this.srcNode.getMapSpecs(stopNode)
+            );
+        } else
+            return specs;
     }
 }
 exports.TMapBoundNode = TMapBoundNode;
