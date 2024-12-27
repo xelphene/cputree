@@ -10,3 +10,4 @@ exports.TGetNode = require('./tget').TGetNode;
 exports.TGetSetNode = require('./tgetset').TGetSetNode;
 exports.TMapBoundNode = require('./tmapbound').TMapBoundNode;
 exports.TRelayInputNode = require('./trelayinput').TRelayInputNode;
+exports.PolyNode = require('./polynode').PolyNode;

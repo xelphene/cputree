@@ -3,7 +3,7 @@
 
 'use strict';
 
-const {unwrap} = require('../tbuild');
+const {unwrap} = require('../tbuild/util');
 const {LeafNode} = require('./leaf');
 const {TreeNode} = require('./treenode');
 const {THIS_NODE} = require('../consts');
