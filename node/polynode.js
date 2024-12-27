@@ -55,8 +55,6 @@ class PolyNode extends TreeNode {
     }
 
     _setArgs (v) {
-        return this._getArgs();
-        /*
         const rv = [];
         for( let b of this._bindings ) {
             if( b===THIS_NODE ) {
@@ -66,7 +64,6 @@ class PolyNode extends TreeNode {
             }
         }
         return rv;
-        */
     }
     
     _initCompute () {
