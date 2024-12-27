@@ -19,8 +19,12 @@ class TGetNode extends TreeNode {
         for( let i=0; i<bindings.length; i++ ) {
             if( bindings[i] instanceof Node ) {
                 bindings[i] = bindings[i].handle;
+                if( bindings[i] instanceof LeafNode )
+                    this._listenToHandle(bindings[i].handle);
             } else if( bindings[i] instanceof NodeHandle ) {
                 // ok
+                if( bindings[i].node instanceof LeafNode )
+                    this._listenToHandle(bindings[i].handle);
             } else {
                 throw new Error(`Node instance required for binding ${i}`);
             }
