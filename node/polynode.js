@@ -108,6 +108,7 @@ class PolyNode extends TreeNode {
         }
          this._value = this._getFunc.apply(null, this._setArgs(v) );
          this._fresh = true;
+         this.fireNodeValueChanged();
     }
     
     computeIfNeeded() {
